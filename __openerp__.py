@@ -20,12 +20,16 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base',
+                'mrp'
+    ],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'templates.xml',
+        'views/devis.xml',
+
     ],
     # only loaded in demonstration mode
     'demo': [

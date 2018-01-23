@@ -6,3 +6,9 @@ from openerp import models, fields, api
 #     _name = 'gent.gent'
 
 #     name = fields.Char()
+
+class AvantMetre(models.Model):
+	_name ='gent.avantmetre'
+	_inherit = 'mrp.bom'
+
+	
