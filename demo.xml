@@ -1,5 +1,12 @@
 <openerp>
     <data>
+        <record model="ir.actions.act_window" id="action_list_ideas">
+            <field name="name">Avant Métré</field>
+            <field name="res_model">gent.avantmetre</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="menu_ideas" parent="menu_root" name="Avant Métré" sequence="10"
+                  action="action_list_ideas"/>
         <!--  -->
         <!--   <record id="object0" model="gent.gent"> -->
         <!--     <field name="name">Object 0</field> -->
