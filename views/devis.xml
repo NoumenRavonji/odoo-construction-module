@@ -39,7 +39,7 @@
                 <xpath expr="//field[@name='bom_line_ids']" position="replace">
                          
                                     <field name="bom_line_ids" widget="one2many_list">
-                                      <tree string="Components" editable="top">
+                                      <tree string="Components" editable="bottom">
                                           <field name="sequence" widget="handle"/>
                                           <field name="product_id" on_change="onchange_product_id(product_id, product_qty)"/>
                                           <field name="type"/>
