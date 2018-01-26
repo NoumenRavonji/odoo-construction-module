@@ -23,4 +23,5 @@ class AvantMetreLine(models.Model):
 	bom_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 	rubrique = fields.Char(string="Rubrique")
 
-
+class Bde(models.Model):
+	_inherit = "sale.order"
