@@ -8,7 +8,6 @@ class AvantMetre(models.Model):
 	_name = "gent.avantmetre"
 
 	bom_line_ids =  fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
-	rubrique = fields.Char(string="Rubrique")
 	nom = fields.Char(string="Nom")
 	prix_total = fields.Float(string="Prix Total")
 	state = fields.Selection([
@@ -22,8 +21,6 @@ class AvantMetreLine(models.Model):
 	_name = 'gent.avantmetre.line'
 
 	bom_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
-
-
-
+	rubrique = fields.Char(string="Rubrique")
 
 
