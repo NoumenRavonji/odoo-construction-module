@@ -15,39 +15,44 @@ class AvantMetre(models.Model):
         ('avant_metre', "Avant Métré"),
         ('sous_detail', "Sous détail"),
     ], default='simple')
-	
-	@api.onchange('bom_line_ids')
-	def on_change_bom_line_ids(self):
+	rubrique_last = fields.Char(string="",default="")
+
+	@api.onchange("bom_line_ids")
+	def bom_lines_change(self):
 		print "CHANGE"
-		i = 0
 		rubrique_str = ""
-		# for line in bom_line_ids:
-		# 	print line
-		# 	if(i == 1):
-		# 		rubrique_str = line[2]['rubrique']
-
-		# 	i = i+1
-		# 	print line
-
-		print "CHANGE LOOP"
-		print self.bom_line_ids
-
+		result =[]
 		for line in self.bom_line_ids:
-			print line
-			if(i == 1):
-				rubrique_str = line[2]['rubrique']
-
-		print rubrique_str
-
+			rubrique_str = line.rubrique
+			result.append((0,0,{'product_efficiency': line.product_efficiency, 'product_qty': line.product_qty, 'product_id': line.product_id, 'product_uom': line.product_uom, 'rubrique': line.rubrique}))
+		result.append((0,0,{'rubrique': rubrique_str, 'product_efficiency': 1.0, 'product_qty': 1.0, 'product_uom': 1}))
+		# self.rubrique_last = rubrique_str
+		self.bom_line_ids = result
 
 		pass
+
+	@api.model
+	def create(self, value):
+		print "CREATING"
+		result =[]
+		for line in self.bom_line_ids:
+			result.append((0,0,{'product_efficiency': line.product_efficiency, 'product_qty': line.product_qty, 'product_id': line.product_id, 'product_uom': line.product_uom, 'rubrique': line.rubrique}))
+		print "RECORD"
+		for record in value:
+			print record
+
+		# return super(AvantMetre, self).create(value)
+
+
+
 
 class AvantMetreLine(models.Model):
 	_inherit = "mrp.bom.line"
 	_name = 'gent.avantmetre.line'
-
+	
 	bom_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 	rubrique = fields.Char(string="Rubrique")
 
 class Bde(models.Model):
 	_inherit = "sale.order"
+
