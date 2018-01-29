@@ -25,4 +25,9 @@ class AvantMetreLine(models.Model):
 
 class Bde(models.Model):
 	_inherit = "sale.order"
-
+	
+	avantmetre = fields.Many2one(comodel_name='gent.avantmetre')
+	# avantmetre = fields.Char(string="Avant-métré")
+	# state = fields.Selection([
+	# 	'avantmetre' : fields.many2one('res.avantmetre',string="Avant-métré",required=True)
+	# ],default='entreprise')

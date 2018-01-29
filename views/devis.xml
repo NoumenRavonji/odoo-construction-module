@@ -6,8 +6,6 @@
             The following tag is an action definition for a "window action",
             that is an action opening a view or a set of views
         -->
-        
-
         <record id="avant_metre_form" model="ir.ui.view">
             <field name="name">mrp.bom.form.inherit</field>
             <field name="model">gent.avantmetre</field>
@@ -15,7 +13,6 @@
             <field name="arch" type="xml">
                 <!-- find field description and add the field
                      idea_ids after it -->
-             
                 <xpath expr="//field[@name='product_tmpl_id']" position="replace">
                    <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" string="Chantier"/>
                 </xpath>
@@ -34,32 +31,28 @@
                     <field name="nom"/>
                 </xpath>
                 <xpath expr="//field[@name='bom_line_ids']" position="replace">
-                         
-                                    <field name="bom_line_ids" widget="one2many_list">
-                                      <tree string="Components" editable="bottom">
+                    <field name="bom_line_ids" widget="one2many_list">
+                      <tree string="Components" editable="bottom">
 
-                                          <field name="sequence" widget="handle"/>
-                  
-                                          <field name="rubrique" string="Rubrique"/>
-                                          <field name="product_id" string="Ouvrage élémentaire" on_change="onchange_product_id(product_id, product_qty)"/>
-                                          <!-- <field name="type"/> -->
-                                          <field name="product_qty" string="Quantité d'article"/>
-                                          <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
-                                          <!-- <field name="product_rounding"/> -->
-                                          <field name="product_efficiency" string="Rendement" />
-                                        <!--   <field name="date_start"/>
-                                          <field name="date_stop"/> -->
-                                        <!--   <field name="attribute_value_ids" widget="many2many_tags" domain="[('product_ids.product_tmpl_id', '=', parent.product_tmpl_id)]"/> -->
-                                         <!--  <field name="property_ids" widget="many2many_tags"/> -->
-                                      </tree>
-                                  </field>
-                                
-                  
+                          <field name="sequence" widget="handle"/>
+  
+                          <field name="rubrique" string="Rubrique"/>
+                          <field name="product_id" string="Ouvrage élémentaire" on_change="onchange_product_id(product_id, product_qty)"/>
+                          <!-- <field name="type"/> -->
+                          <field name="product_qty" string="Quantité d'article"/>
+                          <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
+                          <!-- <field name="product_rounding"/> -->
+                          <field name="product_efficiency" string="Rendement" />
+                        <!--   <field name="date_start"/>
+                          <field name="date_stop"/> -->
+                        <!--   <field name="attribute_value_ids" widget="many2many_tags" domain="[('product_ids.product_tmpl_id', '=', parent.product_tmpl_id)]"/> -->
+                         <!--  <field name="property_ids" widget="many2many_tags"/> -->
+                      </tree>
+                  </field>
                 </xpath>
-                
             </field>
-            
         </record>
+        
         <record model="ir.actions.act_window" id="avant_metre_list_action">
             <field name="name">Avant Métré</field>
             <field name="res_model">gent.avantmetre</field>
