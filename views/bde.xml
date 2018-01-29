@@ -22,6 +22,7 @@
                 </p>
             </field>
 		</record>
+        
 
     	<menuitem id="bde_menu" name="BDE" parent="gent_devis_menu"
                   action="bde_list_action"/>
