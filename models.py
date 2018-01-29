@@ -18,6 +18,7 @@ class AvantMetre(models.Model):
     ], default='simple')
 
 	partner_id=fields.Many2one('res.partner', 'Client', required=True, select=True)
+	#rubrique_last = ""
 	
 	@api.onchange("bom_line_ids")
 	def bom_lines_change(self):
@@ -27,9 +28,9 @@ class AvantMetre(models.Model):
 		for line in self.bom_line_ids:
 			rubrique_str = line.rubrique
 			result.append((0,0,{'product_efficiency': line.product_efficiency, 'product_qty': line.product_qty, 'product_id': line.product_id, 'product_uom': line.product_uom, 'rubrique': line.rubrique}))
-		result.append((0,0,{'rubrique': rubrique_str, 'product_efficiency': 1.0, 'product_qty': 1.0, 'product_uom': 1}))
-		# self.rubrique_last = rubrique_str
-		self.bom_line_ids = result
+		# result.append((0,0,{'rubrique': rubrique_str, 'product_efficiency': 1.0, 'product_qty': 1.0, 'product_uom': 1}))
+		#self.rubrique_last = rubrique_str
+		#self.bom_line_ids = result
 
 		pass
 
