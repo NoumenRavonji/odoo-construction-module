@@ -10,13 +10,15 @@ class AvantMetre(models.Model):
 	bom_line_ids =  fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
 	nom = fields.Char(string="Nom")
 	prix_total = fields.Float(string="Prix Total")
+	
 	state = fields.Selection([
         ('simple', "Simple"),
         ('avant_metre', "Avant Métré"),
         ('sous_detail', "Sous détail"),
     ], default='simple')
-	rubrique_last = fields.Char(string="",default="")
-
+	
+	partner_id=fields.Many2one('res.partner', 'Client', required=True, select=True)
+	
 	@api.onchange("bom_line_ids")
 	def bom_lines_change(self):
 		print "CHANGE"
@@ -31,15 +33,7 @@ class AvantMetre(models.Model):
 
 		pass
 
-	@api.model
-	def create(self, value):
-		print "CREATING"
-		result =[]
-		for line in self.bom_line_ids:
-			result.append((0,0,{'product_efficiency': line.product_efficiency, 'product_qty': line.product_qty, 'product_id': line.product_id, 'product_uom': line.product_uom, 'rubrique': line.rubrique}))
-		print "RECORD"
-		for record in value:
-			print record
+
 
 		# return super(AvantMetre, self).create(value)
 
