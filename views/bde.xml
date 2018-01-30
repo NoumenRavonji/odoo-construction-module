@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='partner_id']" position="before">
                     <!--  <field name="idea_ids" string="Number of ideas"/> -->
-                    <!-- <field name="avantmetre" string="Avant-métré"/> -->
+                    <field name="avantmetre" string="Avant-métré"/>
                 </xpath>
             </field>
         </record>

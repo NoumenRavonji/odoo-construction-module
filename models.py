@@ -51,3 +51,8 @@ class Bde(models.Model):
 	# state = fields.Selection([
 	# 	'avantmetre' : fields.many2one('res.avantmetre',string="Avant-métré",required=True)
 	# ],default='entreprise')
+	@api.onchange("avantmetre")
+	def fill_fields(self):
+		self.partner_id = "bonjour"
+
+		pass
