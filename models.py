@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from openerp import models, fields, api
+from openerp.api import Environment as env
 
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
 	_name = "gent.avantmetre"
 
-	bom_line_ids =  fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
+	# bom_line_ids =  fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
+	rubrique_line_ids =  fields.One2many('gent.avantmetre.rubrique', 'avantmetre_id', 'Rubrique', copy=True)
 	nom = fields.Char(string="Nom")
 	prix_total = fields.Float(string="Prix Total")
 	
@@ -39,13 +41,19 @@ class AvantMetre(models.Model):
 		# return super(AvantMetre, self).create(value)
 
 
+class AvantMetreRubrique(models.Model):
+	_name = "gent.avantmetre.rubrique"
+
+	rubrique = fields.Char("Rubrique")
+	rubrique_bom_line_ids = fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
+	avantmetre_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 
 
 class AvantMetreLine(models.Model):
 	_inherit = "mrp.bom.line"
 	_name = 'gent.avantmetre.line'
 	
-	bom_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
+	bom_id =  fields.Many2one('gent.avantmetre.rubrique', 'Parent BoM', ondelete='cascade', select=True, required=True)
 	rubrique = fields.Char(string="Rubrique")
 
 class Bde(models.Model):
@@ -56,3 +64,27 @@ class Bde(models.Model):
 	# state = fields.Selection([
 	# 	'avantmetre' : fields.many2one('res.avantmetre',string="Avant-métré",required=True)
 	# ],default='entreprise')
+	@api.onchange('avantmetre')
+	def on_change_avantmetre(self):
+		print "AVNAT METRE CHANGE"
+		result = []
+		domain = []
+		print self.avantmetre.partner_id
+		self.partner_id = self.avantmetre.partner_id
+		for rubrique_line in self.avantmetre.rubrique_line_ids:
+			rubrique = self.env['sale_layout.category'].create({"name": rubrique_line.rubrique, "sequence": 10})
+			for line in rubrique_line.rubrique_bom_line_ids:
+				# print line.product_id
+				
+				vals = self.pool.get('sale.order.line').product_id_change(self.env.cr, self.env.uid, [], self.pricelist_id, line.product_id.id, line.product_qty, line.product_uom.id, 0, False, '', self.partner_id.id)
+				vals['value'].update({
+	              'product_id': line.product_id.id,
+	              'product_uom': line.product_uom,
+	              'product_uom_qty': line.product_qty,
+	              'price_unit': 0,
+	              'sale_layout_cat_id': rubrique
+	            })
+				result.append(vals['value'])
+				
+		self.order_line = result
+				
