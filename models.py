@@ -1,7 +1,9 @@
+
 # -*- coding: utf-8 -*-
 
 from openerp import models, fields, api
 from openerp.api import Environment as env
+import openerp.addons.decimal_precision as dp
 
 
 class AvantMetre(models.Model):
@@ -60,23 +62,23 @@ class Bde(models.Model):
 	_inherit = "sale.order"
 	
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre')
-	# avantmetre = fields.Char(string="Avant-métré")
-	# state = fields.Selection([
-	# 	'avantmetre' : fields.many2one('res.avantmetre',string="Avant-métré",required=True)
-	# ],default='entreprise')
+
 	@api.onchange('avantmetre')
 	def on_change_avantmetre(self):
 		print "AVNAT METRE CHANGE"
 		result = []
 		domain = []
+		self.order_line = result
 		print self.avantmetre.partner_id
+		print "price_list"
+		# print self.pricelist_id
 		self.partner_id = self.avantmetre.partner_id
 		for rubrique_line in self.avantmetre.rubrique_line_ids:
 			rubrique = self.env['sale_layout.category'].create({"name": rubrique_line.rubrique, "sequence": 10})
 			for line in rubrique_line.rubrique_bom_line_ids:
 				# print line.product_id
 				
-				vals = self.pool.get('sale.order.line').product_id_change(self.env.cr, self.env.uid, [], self.pricelist_id, line.product_id.id, line.product_qty, line.product_uom.id, 0, False, '', self.partner_id.id)
+				vals = self.pool.get('sale.order.line').product_id_change(self.env.cr, self.env.uid, [], self.pricelist_id.id, line.product_id.id, line.product_qty, line.product_uom.id, 0, False, '', self.partner_id.id)
 				vals['value'].update({
 	              'product_id': line.product_id.id,
 	              'product_uom': line.product_uom,
@@ -87,4 +89,29 @@ class Bde(models.Model):
 				result.append(vals['value'])
 				
 		self.order_line = result
+
+class GentSaleOrderLine(models.Model):
+	_inherit = "sale.order.line"
+	mo_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Main d'oeuvre", copy=True)
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériels", copy=True)
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériaux", copy=True)
+
+
+
+class BdeLine(models.Model):
+	_name = 'gent.bde.composant'
+
+	gent_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+
+
+	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, readonly=True, states={'draft': [('readonly', False)]}, ondelete='restrict')
+	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'), readonly=True, states={'draft': [('readonly', False)]})
+	price_subtotal =  fields.Float('Montant')
+	product_uom_qty =  fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True, states={'draft': [('readonly', False)]})
+	product_uom = fields.Many2one('product.uom', 'Unit of Measure ', required=True, readonly=True, states={'draft': [('readonly', False)]})
+
+
+
+	
+	
 				

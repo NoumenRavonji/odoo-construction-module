@@ -11,8 +11,7 @@
             <field name="model">gent.avantmetre</field>
             <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
             <field name="arch" type="xml">
-                <!-- find field description and add the field
-                     idea_ids after it -->
+            
                 <xpath expr="//field[@name='product_tmpl_id']" position="replace">
                    <field name="partner_id" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
                    <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" string="Chantier"/>
@@ -77,6 +76,8 @@
             <field name="name">Avant Métré</field>
             <field name="res_model">gent.avantmetre</field>
             <field name="view_type">form</field>
+            <field name="view_id" ref="avant_metre_form"/>
+
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">Créer un avant métré
                 </p>
