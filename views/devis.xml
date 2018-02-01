@@ -14,7 +14,8 @@
             
                 <xpath expr="//field[@name='product_tmpl_id']" position="replace">
                    <field name="partner_id" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
-                   <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" string="Chantier"/>
+                   <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" string="Chantier" />
+                   <!-- domain="[('chantier','=',True)]" -->
                 </xpath>
                 <xpath expr="//field[@name='product_tmpl_id']" position="after">
                    <field name="prix_total"/>
@@ -34,7 +35,7 @@
                          
                     <field name="rubrique_line_ids" open="false">
                         <form editable="bottom" open="false">
-                          <field string="Rubrique" name="rubrique" />
+                          <field string="Rubrique" name="rubrique"/>
                        
                        
                               <field name="rubrique_bom_line_ids"  widget="one2many_list" >
@@ -49,7 +50,8 @@
                                     <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
                                     <!-- <field name="product_rounding"/> -->
                                     <field name="product_efficiency" string="Rendement" />
-                                  </tree>
+                                  </tree
+                                  >
                               </field>
                         </form>
                        

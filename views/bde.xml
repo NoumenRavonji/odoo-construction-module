@@ -51,14 +51,55 @@
                                             <field name="address_allotment_id"/>
                                         </group>
                                     </group>
+
+
                                     <label for="name"/>
                                     <field name="name"/>
-                                    <div groups="base.group_no_one">
+
+                                    <label for="mo_line"/>
+                    <field name="materiaux_line" widget="one2many_list" >
+                          <tree string="Détails Main d'oeuvre" editable="bottom">
+                            <field name="product_id" />
+                                <field name="product_uom" />
+                                <field name="product_uom_qty" />
+                                <field name="price_unit" />
+                                <field name="price_subtotal" />
+
+                          </tree>
+
+                    </field>
+
+                     <label for="materiel_line"/>
+                        <field name="materiel_line" widget="one2many_list" >
+                              <tree string="Détails Main d'oeuvre" editable="bottom">
+                                <field name="product_id" />
+                                <field name="product_uom" />
+                                <field name="product_uom_qty" />
+                                <field name="price_unit" />
+                                <field name="price_subtotal" />
+
+                              </tree>
+
+                        </field>
+
+                     <label for="mo_line"/>
+                        <field name="materiaux_line" widget="one2many_list" >
+                              <tree string="Détails Main d'oeuvre" editable="bottom">
+                                <field name="product_id" />
+                                <field name="product_uom" />
+                                <field name="product_uom_qty" />
+                                <field name="price_unit" />
+                                <field name="price_subtotal" />
+
+                              </tree>
+
+                        </field> 
+                                    <!-- <div groups="base.group_no_one">
                                         <label for="invoice_lines"/>
                                         <field name="invoice_lines"/>
-                                    </div>
+                                    </div> -->
                                 </form>
-                                <tree string="Sales Order Lines" editable="bottom">
+                                <tree string="Sales Order Lines" >
                                     <field name="sequence" widget="handle"/>
                                     <field name="state" invisible="1"/>
                                     <field name="th_weight" invisible="1"/>
@@ -127,8 +168,15 @@
 
                         </field> -->
                 </xpath> 
+
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}'/>
+                </xpath>
+
             </field>
         </record>
+        
+
     	<record id="bde_list_action" model="ir.actions.act_window">
 			<field name="name">BDE</field>
 			<field name="res_model">sale.order</field>
@@ -139,6 +187,7 @@
                 </p>
             </field>
 		</record>
+        
 
 
 

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="type_produit_form" model="ir.ui.view">
+            <field name="name">product.template.common.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='sale_ok']" position="before">
+                    <field name="gent_type" string="Type" default="chantier"/>
+                </xpath>
+            </field>
+        </record>
+
+    	<record id="type_produit_list_action" model="ir.actions.act_window">
+			<field name="name">Type produit</field>
+			<field name="res_model">product.template</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="help" type="html">
+                <p class="oe_view_nocontent_create">Type produits
+                </p>
+            </field>
+		</record>
+        
+    </data>
+</openerp>
