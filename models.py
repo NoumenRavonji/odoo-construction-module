@@ -53,17 +53,43 @@ class AvantMetreLine(models.Model):
 	bom_id =  fields.Many2one('gent.avantmetre.rubrique', 'Parent BoM', ondelete='cascade', select=True, required=True)
 	rubrique = fields.Char(string="Rubrique")
 
+class Product2(models.Model):
+	_inherit = "product.template"
+
+	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre')], default='chantier')
+
 class Bde(models.Model):
 	_inherit = "sale.order"
 	
-	avantmetre = fields.Many2one(comodel_name='gent.avantmetre')
-	# avantmetre = fields.Char(string="Avant-métré")
-	# state = fields.Selection([
-	# 	'avantmetre' : fields.many2one('res.avantmetre',string="Avant-métré",required=True)
-	# ],default='entreprise')
+	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
+	# @api.model
+	# def onchange_pricelist_id(self,pricelist_id, order_lines, context=None):
+	# 	context = context or {}
+	# 	if not pricelist_id:
+	# 		return {}
+	# 		value = {
+	# 		'currency_id': self.pool.get('product.pricelist').browse(self.env.cr, self.env.uid, pricelist_id, context=context).currency_id.id
+	# 		}
+	# 	if not order_lines or order_lines == [(6, 0, [])]:
+	# 		return {'value': value}
+	# 		warning = {
+	# 			'title': _('Pricelist Warning!'),
+	# 			'message' : _('If you change the pricelist of this order (and eventually the currency), prices of existing order lines will not be updated.')
+	# 		}
+		#return {'warning':{}, 'value': value}
+
+	# @api.onchange('partner_id')
+	# def alert(self):
+	# 	return {
+ #        'warning': {
+ #            'title': "Something bad happened",
+ #            'message': "It was very bad indeed",
+ #        }
+ #    }
+
 	@api.onchange('avantmetre')
 	def on_change_avantmetre(self):
-		print "AVNAT METRE CHANGE"
+		print "AVANT METRE CHANGE"
 		result = []
 		domain = []
 		print self.avantmetre.partner_id
@@ -73,8 +99,10 @@ class Bde(models.Model):
 			for line in rubrique_line.rubrique_bom_line_ids:
 				# print line.product_id
 				
-				vals = self.pool.get('sale.order.line').product_id_change(self.env.cr, self.env.uid, [], self.pricelist_id, line.product_id.id, line.product_qty, line.product_uom.id, 0, False, '', self.partner_id.id)
+				vals = self.pool.get('sale.order.line').product_id_change(self.env.cr, self.env.uid, [], self.pricelist_id.id, line.product_id.id, line.product_qty, line.product_uom.id, 0, False, '', self.partner_id.id)
 				vals['value'].update({
+					'delay': 0,
+					'state': "draft",
 	              'product_id': line.product_id.id,
 	              'product_uom': line.product_uom,
 	              'product_uom_qty': line.product_qty,

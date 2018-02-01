@@ -21,7 +21,10 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base',
-                'mrp'
+                'mrp',
+                'sale_layout',
+                'sale',
+                'product'
     ],
 
     # always loaded
@@ -30,6 +33,7 @@
         'templates.xml',
         'views/devis.xml',
         'views/bde.xml',
+        'views/type_produit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
