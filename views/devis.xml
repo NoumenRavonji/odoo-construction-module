@@ -15,7 +15,7 @@
                      idea_ids after it -->
                 <xpath expr="//field[@name='product_tmpl_id']" position="replace">
                    <field name="partner_id" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
-                   <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" string="Chantier" />
+                   <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" domain="[('gent_type', '=', 'chantier')]" string="Chantier"/>
                    <!-- domain="[('chantier','=',True)]" -->
                 </xpath>
                 <xpath expr="//field[@name='product_tmpl_id']" position="after">
@@ -45,7 +45,7 @@
                                     <field name="sequence" widget="handle"/>
             
                                    <!--  <field name="rubrique" string="Rubrique"/> -->
-                                    <field name="product_id" string="Ouvrage élémentaire" on_change="onchange_product_id(product_id, product_qty)"/>
+                                    <field name="product_id" string="Ouvrage élémentaire" on_change="onchange_product_id(product_id, product_qty)" domain="[('gent_type', '=', 'ouvrage_elementaire')]"/>
                                     <!-- <field name="type"/> -->
                                     <field name="product_qty" string="Quantité d'article"/>
                                     <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
