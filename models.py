@@ -1,7 +1,9 @@
+
 # -*- coding: utf-8 -*-
 
 from openerp import models, fields, api
 from openerp.api import Environment as env
+import openerp.addons.decimal_precision as dp
 
 
 class AvantMetre(models.Model):
@@ -79,6 +81,7 @@ class Product2(models.Model):
 class Bde(models.Model):
 	_inherit = "sale.order"
 	
+
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
 	# @api.model
 	# def onchange_pricelist_id(self,pricelist_id, order_lines, context=None):
@@ -110,7 +113,10 @@ class Bde(models.Model):
 		print "AVANT METRE CHANGE"
 		result = []
 		domain = []
+		self.order_line = result
 		print self.avantmetre.partner_id
+		print "price_list"
+		# print self.pricelist_id
 		self.partner_id = self.avantmetre.partner_id
 		for rubrique_line in self.avantmetre.rubrique_line_ids:
 			rubrique = self.env['sale_layout.category'].create({"name": rubrique_line.rubrique, "sequence": 10})
@@ -130,3 +136,27 @@ class Bde(models.Model):
 				result.append(vals['value'])
 				
 		self.order_line = result
+
+class GentSaleOrderLine(models.Model):
+	_inherit = "sale.order.line"
+	mo_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Main d'oeuvre", copy=True)
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériels", copy=True)
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériaux", copy=True)
+
+
+
+class BdeLine(models.Model):
+	_name = 'gent.bde.composant'
+
+	gent_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+
+
+	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
+	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
+	price_subtotal =  fields.Float('Montant')
+	product_uom_qty =  fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True)
+	product_uom = fields.Many2one('product.uom', 'Unit of Measure ', required=True)
+
+
+
+
