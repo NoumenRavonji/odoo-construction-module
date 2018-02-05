@@ -25,12 +25,16 @@ class AvantMetre(models.Model):
 	#rubrique_last = ""
 	
 	@api.model
-	def create(self,vals,number, context=None):
+	def create(self,vals,context=None):
 		print "Produit"
 		print vals
 		product_id = vals['product_tmpl_id']
-
+		print "hello"
+		# ma_liste = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']
+		print vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
+		ouv_elt = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
 		self.env['product.template'].browse([product_id]).write({'gent_type': 'chantier'})
+		self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
 		return super(AvantMetre,self).create(vals)
 
 
@@ -58,11 +62,12 @@ class AvantMetreRubrique(models.Model):
 	rubrique_bom_line_ids = fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
 	avantmetre_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 
-	@api.model
-	def create(self,values, context=None):
-		print "Produit"
+	# @api.model
+	# def create(self,values, context=None):
+	# 	print "A identifier"
+	# 	print values
 
-		return super(AvantMetreRubrique,self).create(values)
+	# 	return super(AvantMetreRubrique,self).create(values)
 
 
 
