@@ -34,7 +34,10 @@ class AvantMetre(models.Model):
 		print vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
 		ouv_elt = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
 		self.env['product.template'].browse([product_id]).write({'gent_type': 'chantier'})
-		self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
+		# self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
+		for i in vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']:
+			j=i[2]['product_id']
+			self.env['product.template'].browse([j]).write({'gent_type': 'ouvrage_elementaire'})
 		return super(AvantMetre,self).create(vals)
 
 
