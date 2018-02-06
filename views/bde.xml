@@ -172,7 +172,6 @@
                 <xpath expr="//field[@name='partner_id']" position="replace">
                     <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}'/>
                 </xpath>
-
             </field>
         </record>
         

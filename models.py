@@ -24,6 +24,24 @@ class AvantMetre(models.Model):
 	partner_id=fields.Many2one('res.partner', 'Client', required=True, select=True)
 	#rubrique_last = ""
 	
+	@api.model
+	def create(self,vals,context=None):
+		print "Produit"
+		print vals
+		product_id = vals['product_tmpl_id']
+		print "hello"
+		# ma_liste = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']
+		print vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
+		ouv_elt = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
+		self.env['product.template'].browse([product_id]).write({'gent_type': 'chantier'})
+		# self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
+		for i in vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']:
+			j=i[2]['product_id']
+			self.env['product.template'].browse([j]).write({'gent_type': 'ouvrage_elementaire'})
+		return super(AvantMetre,self).create(vals)
+
+
+
 	@api.onchange("bom_line_ids")
 	def bom_lines_change(self):
 		print "CHANGE"
@@ -47,6 +65,14 @@ class AvantMetreRubrique(models.Model):
 	rubrique_bom_line_ids = fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
 	avantmetre_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 
+	# @api.model
+	# def create(self,values, context=None):
+	# 	print "A identifier"
+	# 	print values
+
+	# 	return super(AvantMetreRubrique,self).create(values)
+
+
 
 class AvantMetreLine(models.Model):
 	_inherit = "mrp.bom.line"
@@ -58,7 +84,7 @@ class AvantMetreLine(models.Model):
 class Product2(models.Model):
 	_inherit = "product.template"
 
-	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre')], default='chantier')
+	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre')])
 
 class Bde(models.Model):
 	_inherit = "sale.order"
