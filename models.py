@@ -171,6 +171,51 @@ class BdeLine(models.Model):
 		for record in self:
 			record.price_subtotal = record.price_unit * record.product_uom_qty
 
+class Coeff(models.Model):
+	_name="gent.coeff"
+	frais_1 = fields.Float("Frais Généraux proportionnel au débourse", compute = "_compute_frais_1")
+	frais_2 = fields.Float("Bénéfice brut et frais proportionnel au prix de revient", compute = "_compute_frais_2")
+	frais_3 = fields.Float("Frais proportionnel au prix de règlement", compute = "_compute_frais_3")
+
+	frais_11 = fields.Float("Frais d'agence et patente (%)", default=0)
+	frais_12 = fields.Float("Frais de chantier (%)", default=0)
+	frais_13 = fields.Float("Frais d'études et de laboratoire (%)", default=0)
+	frais_14 = fields.Float("Assurances (%)", default=0)
+
+	frais_21 = fields.Float("Bénéfice net et impôt sur le bénéfice (%)", default=20)
+	frais_22 = fields.Float("Aléas techniques (%)", default=0)
+	frais_23 = fields.Float("Aléas de révision de prix (%)", default=0)
+	frais_24 = fields.Float("Frais financier (%)", default=0)
+
+	tva = fields.Float("Frais financier", default=20)
+
+	frais_31 = fields.Float("Frais pour les entreprises qui n'ont pas leur siège à Madagascar (%)", default=0)
+
+	coeff = fields.Float("Coefficient de vente K", compute="_compute_coeff")
+
+
+
+	@api.depends('frais_11', 'frais_12', 'frais_13', 'frais_14')
+	def _compute_frais_1(self):
+		for record in self:
+			record.frais_1 = record.frais_11 + record.frais_12 + record.frais_13 + record.frais_14
+
+	@api.depends('frais_21', 'frais_22', 'frais_23', 'frais_24')
+	def _compute_frais_2(self):
+		for record in self:
+			record.frais_2 = record.frais_21 + record.frais_22 + record.frais_23 + record.frais_24
+
+	@api.depends('frais_31')
+	def _compute_frais_3(self):
+		for record in self:
+			record.frais_3 = record.frais_31
+
+	@api.depends('frais_1', "frais_2", "frais_3", "tva")
+	def _compute_coeff(self):
+		for record in self:
+			record.coeff = ( (1 + (record.frais_1/100) ) *(1 + (record.frais_2/100) ) ) / (1 - (record.frais_3*(1+(record.tva/100))))
+
+
 
 
 
