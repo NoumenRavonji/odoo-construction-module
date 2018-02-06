@@ -56,7 +56,7 @@
                                     <label for="name"/>
                                     <field name="name"/>
 
-                                    <label for="mo_line"/>
+                                    <label for="materiaux_line"/>
                     <field name="materiaux_line" widget="one2many_list" >
                           <tree string="Détails Main d'oeuvre" editable="bottom">
                             <field name="product_id" />
@@ -83,7 +83,7 @@
                         </field>
 
                      <label for="mo_line"/>
-                        <field name="materiaux_line" widget="one2many_list" >
+                        <field name="mo_line" widget="one2many_list" >
                               <tree string="Détails Main d'oeuvre" editable="bottom">
                                 <field name="product_id" />
                                 <field name="product_uom" />

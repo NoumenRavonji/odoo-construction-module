@@ -124,6 +124,7 @@ class GentSaleOrderLine(models.Model):
 	mo_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Main d'oeuvre", copy=True)
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériels", copy=True)
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériaux", copy=True)
+	mo_lines_subtotal = fields.Float('Total')
 
 
 
@@ -135,9 +136,14 @@ class BdeLine(models.Model):
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
-	price_subtotal =  fields.Float('Montant')
+	price_subtotal =  fields.Float('Montant', compute='_compute_subtotal')
 	product_uom_qty =  fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True)
 	product_uom = fields.Many2one('product.uom', 'Unit of Measure ', required=True)
+
+	@api.depends('price_unit','product_uom_qty')
+	def _compute_subtotal(self):
+		for record in self:
+			record.price_subtotal = record.price_unit * record.product_uom_qty
 
 
 
