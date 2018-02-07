@@ -91,6 +91,9 @@ class Bde(models.Model):
 	
 
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
+
+	coeff= fields.Many2one(comodel_name="gent.coeff")
+
 	# @api.model
 	# def onchange_pricelist_id(self,pricelist_id, order_lines, context=None):
 	# 	context = context or {}
@@ -173,6 +176,7 @@ class BdeLine(models.Model):
 
 class Coeff(models.Model):
 	_name="gent.coeff"
+	_rec_name = "coeff"
 	frais_1 = fields.Float("Frais Généraux proportionnel au débourse", compute = "_compute_frais_1")
 	frais_2 = fields.Float("Bénéfice brut et frais proportionnel au prix de revient", compute = "_compute_frais_2")
 	frais_3 = fields.Float("Frais proportionnel au prix de règlement", compute = "_compute_frais_3")
