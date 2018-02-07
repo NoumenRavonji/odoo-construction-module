@@ -33,7 +33,8 @@
         'templates.xml',
         'views/devis.xml',
         'views/bde.xml',
-        'views/type_produit.xml'
+        'views/type_produit.xml',
+        'views/coeff.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
