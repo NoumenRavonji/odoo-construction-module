@@ -85,27 +85,38 @@ class Bde(models.Model):
 	@api.model
 	def create(self,vals,context=None):
 		print "BDE a Voir"
-		somme_mo = 0
-		somme_materiaux = 0
-		somme_materiel = 0
-		for i in vals['order_line'][0][2]['mo_line']:
-			somme_mo += i[2]['price_unit']
-		for i in vals['order_line'][0][2]['materiaux_line']:
-			somme_materiel += i[2]['price_unit']
-		for i in vals['order_line'][0][2]['materiel_line']:
-			somme_materiel += i[2]['price_unit']
-		pu = somme_materiel+somme_mo+somme_materiaux
-		vals['order_line'][0][2]['price_unit'] = pu
-		for i in vals['order_line'][0][2]['materiaux_line']:
-			j=i[2]['product_id']
-			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
-		for i in vals['order_line'][0][2]['materiel_line']:
-			j=i[2]['product_id']
-			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
-		for i in vals['order_line'][0][2]['mo_line']:
-			j=i[2]['product_id']
-			self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+		# somme_mo = 0
+		# somme_materiaux = 0
+		# somme_materiel = 0
+		# for i in vals['order_line'][0][2]['mo_line']:
+		# 	somme_mo += i[2]['price_unit']
+		# for i in vals['order_line'][0][2]['materiaux_line']:
+		# 	somme_materiel += i[2]['price_unit']
+		# for i in vals['order_line'][0][2]['materiel_line']:
+		# 	somme_materiel += i[2]['price_unit']
+		# pu = somme_materiel+somme_mo+somme_materiaux
+		# vals['order_line'][0][2]['price_unit'] = pu
+		try:
+			for i in vals['order_line'][0][2]['materiaux_line']:
+				j=i[2]['product_id']
+				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+		except KeyError:
+			print "Erreur d'index"
+		try:
+			for i in vals['order_line'][0][2]['materiel_line']:
+				j=i[2]['product_id']
+				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+		except KeyError:
+			print "Erreur d'index"
+		try:
+			for i in vals['order_line'][0][2]['mo_line']:
+				j=i[2]['product_id']
+				self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+		except KeyError:
+			print "Erreur d'index"
 		return super(Bde,self).create(vals)
+
+	
 
 	@api.onchange('avantmetre')
 	def on_change_avantmetre(self):
@@ -138,18 +149,39 @@ class Bde(models.Model):
 
 class GentSaleOrderLine(models.Model):
 	_inherit = "sale.order.line"
-	mo_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Main d'oeuvre", copy=True)
-	materiel_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériels", copy=True)
-	materiaux_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériaux", copy=True)
+	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels", copy=True)
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux", copy=True)
 	mo_lines_subtotal = fields.Float('Total')
-
-
+	total = fields.Float(compute='_compute_pu')
+	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'),compute='_compute_pu')
+	@api.depends('mo_line','materiaux_line','materiel_line')
+	def _compute_pu(self):
+		for record in self:
+			somme_mo = sum(line.price_unit for line in record.mo_line)
+		for record in self:
+			somme_materiaux = sum(line.price_unit for line in record.materiel_line)
+		for record in self:
+			somme_materiel = sum(line.price_unit for line in record.materiaux_line)
+		self.price_unit = somme_mo + somme_materiel + somme_materiaux
+		# somme_mo = 0
+		# somme_materiaux = 0
+		# somme_materiel = 0
+		# for i in vals['order_line'][0][2]['mo_line']:
+		# 	somme_mo += i[2]['price_unit']
+		# for i in vals['order_line'][0][2]['materiaux_line']:
+		# 	somme_materiel += i[2]['price_unit']
+		# for i in vals['order_line'][0][2]['materiel_line']:
+		# 	somme_materiel += i[2]['price_unit']
+		# pu = somme_materiel+somme_mo+somme_materiaux
+		# vals['order_line'][0][2]['price_unit'] = pu
 
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
 
-	gent_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-
+	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
