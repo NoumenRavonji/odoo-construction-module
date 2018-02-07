@@ -54,12 +54,12 @@
 
 
                                     <label for="name"/>
-                                    <field name="name"/>
+                                    <field name="name" style="background-color: white;"/>
 
-                                    <label for="mo_line"/>
+                                    <label for="materiaux_line"/>
                     <field name="materiaux_line" widget="one2many_list" >
                           <tree string="Détails Main d'oeuvre" editable="bottom">
-                            <field name="product_id" />
+                            <field name="product_id" domain="[('gent_type', '=', 'composant_materiaux')]"/>
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
@@ -72,7 +72,7 @@
                      <label for="materiel_line"/>
                         <field name="materiel_line" widget="one2many_list" >
                               <tree string="Détails Main d'oeuvre" editable="bottom">
-                                <field name="product_id" />
+                                <field name="product_id" domain="[('gent_type', '=', 'composant_materiel')]" />
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
@@ -83,9 +83,9 @@
                         </field>
 
                      <label for="mo_line"/>
-                        <field name="materiaux_line" widget="one2many_list" >
+                        <field name="mo_line" widget="one2many_list" >
                               <tree string="Détails Main d'oeuvre" editable="bottom">
-                                <field name="product_id" />
+                                <field name="product_id" domain="[('gent_type', '=', 'composant_main_d_oeuvre')]"/>
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
@@ -107,7 +107,7 @@
                                         context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
                                         groups="base.group_user"
                                         on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, False, product_uos_qty, False, name, parent.partner_id, False, True, parent.date_order, False, parent.fiscal_position, False, context)"/>
-                                    <field name="name"/>
+                                    <field name="name" />
                                     <field name="product_uom_qty"
                                         context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
                                         on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.partner_id, False, False, parent.date_order, False, parent.fiscal_position, True, context)"/>
@@ -170,7 +170,7 @@
                 </xpath> 
 
                 <xpath expr="//field[@name='partner_id']" position="replace">
-                    <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}'/>
+                    <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}' style="color:green"/>
                 </xpath>
             </field>
         </record>

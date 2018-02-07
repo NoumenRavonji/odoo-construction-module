@@ -65,15 +65,6 @@ class AvantMetreRubrique(models.Model):
 	rubrique_bom_line_ids = fields.One2many('gent.avantmetre.line', 'bom_id', 'BoM Lines', copy=True)
 	avantmetre_id =  fields.Many2one('gent.avantmetre', 'Parent BoM', ondelete='cascade', select=True, required=True)
 
-	# @api.model
-	# def create(self,values, context=None):
-	# 	print "A identifier"
-	# 	print values
-
-	# 	return super(AvantMetreRubrique,self).create(values)
-
-
-
 class AvantMetreLine(models.Model):
 	_inherit = "mrp.bom.line"
 	_name = 'gent.avantmetre.line'
@@ -91,30 +82,30 @@ class Bde(models.Model):
 	
 
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
-	# @api.model
-	# def onchange_pricelist_id(self,pricelist_id, order_lines, context=None):
-	# 	context = context or {}
-	# 	if not pricelist_id:
-	# 		return {}
-	# 		value = {
-	# 		'currency_id': self.pool.get('product.pricelist').browse(self.env.cr, self.env.uid, pricelist_id, context=context).currency_id.id
-	# 		}
-	# 	if not order_lines or order_lines == [(6, 0, [])]:
-	# 		return {'value': value}
-	# 		warning = {
-	# 			'title': _('Pricelist Warning!'),
-	# 			'message' : _('If you change the pricelist of this order (and eventually the currency), prices of existing order lines will not be updated.')
-	# 		}
-		#return {'warning':{}, 'value': value}
-
-	# @api.onchange('partner_id')
-	# def alert(self):
-	# 	return {
- #        'warning': {
- #            'title': "Something bad happened",
- #            'message': "It was very bad indeed",
- #        }
- #    }
+	@api.model
+	def create(self,vals,context=None):
+		print "BDE a Voir"
+		somme_mo = 0
+		somme_materiaux = 0
+		somme_materiel = 0
+		for i in vals['order_line'][0][2]['mo_line']:
+			somme_mo += i[2]['price_unit']
+		for i in vals['order_line'][0][2]['materiaux_line']:
+			somme_materiel += i[2]['price_unit']
+		for i in vals['order_line'][0][2]['materiel_line']:
+			somme_materiel += i[2]['price_unit']
+		pu = somme_materiel+somme_mo+somme_materiaux
+		vals['order_line'][0][2]['price_unit'] = pu
+		for i in vals['order_line'][0][2]['materiaux_line']:
+			j=i[2]['product_id']
+			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+		for i in vals['order_line'][0][2]['materiel_line']:
+			j=i[2]['product_id']
+			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+		for i in vals['order_line'][0][2]['mo_line']:
+			j=i[2]['product_id']
+			self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+		return super(Bde,self).create(vals)
 
 	@api.onchange('avantmetre')
 	def on_change_avantmetre(self):
@@ -150,6 +141,7 @@ class GentSaleOrderLine(models.Model):
 	mo_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Main d'oeuvre", copy=True)
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériels", copy=True)
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_order_line_id', "Matériaux", copy=True)
+	mo_lines_subtotal = fields.Float('Total')
 
 
 
@@ -161,10 +153,11 @@ class BdeLine(models.Model):
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
-	price_subtotal =  fields.Float('Montant')
+	price_subtotal =  fields.Float('Montant', compute='_compute_subtotal')
 	product_uom_qty =  fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True)
 	product_uom = fields.Many2one('product.uom', 'Unit of Measure ', required=True)
 
-
-
-
+	@api.depends('price_unit','product_uom_qty')
+	def _compute_subtotal(self):
+		for record in self:
+			record.price_subtotal = record.price_unit * record.product_uom_qty
