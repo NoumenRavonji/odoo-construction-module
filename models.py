@@ -147,6 +147,7 @@ class Bde(models.Model):
 				
 		self.order_line = result
 
+
 class GentSaleOrderLine(models.Model):
 	_inherit = "sale.order.line"
 	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
