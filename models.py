@@ -199,6 +199,9 @@ class BdeLine(models.Model):
 		for record in self:
 			record.price_subtotal = record.price_unit * record.product_uom_qty
 
+class OuvrageElementaire(models.Model)
+	_inherit = "mrp.bom"
+
 class Coeff(models.Model):
 	_name="gent.coeff"
 	_rec_name = "coeff"

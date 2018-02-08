@@ -172,8 +172,16 @@
                 <xpath expr="//field[@name='partner_id']" position="replace">
                     <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}' style="color:green"/>
                 </xpath>
+
+                <xpath expr="//group[@name='sale_total']" position="after">
+                    <group name="sale_margin_grp">
+                        <field name="coeff" widget='monetary' groups="base.group_user"/>
+                    </group>
+                </xpath>
             </field>
         </record>
+
+
         
 
     	<record id="bde_list_action" model="ir.actions.act_window">
