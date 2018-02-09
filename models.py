@@ -4,6 +4,7 @@
 from openerp import models, fields, api
 from openerp.api import Environment as env
 import openerp.addons.decimal_precision as dp
+from openerp.tools.translate import _
 
 
 class AvantMetre(models.Model):
@@ -84,42 +85,76 @@ class Bde(models.Model):
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
 
 
-	coeff= fields.Many2one(comodel_name="gent.coeff")
+	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
+
+	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
+		value = {
+            'currency_id': self.pool.get('product.pricelist').browse(cr, uid, pricelist_id, context=context).currency_id.id
+		}
+		return { 'value': value}
 
 
-	@api.model
-	def create(self,vals,context=None):
-		print "BDE a Voir"
-		# somme_mo = 0
-		# somme_materiaux = 0
-		# somme_materiel = 0
-		# for i in vals['order_line'][0][2]['mo_line']:
-		# 	somme_mo += i[2]['price_unit']
-		# for i in vals['order_line'][0][2]['materiaux_line']:
-		# 	somme_materiel += i[2]['price_unit']
-		# for i in vals['order_line'][0][2]['materiel_line']:
-		# 	somme_materiel += i[2]['price_unit']
-		# pu = somme_materiel+somme_mo+somme_materiaux
-		# vals['order_line'][0][2]['price_unit'] = pu
-		try:
-			for i in vals['order_line'][0][2]['materiaux_line']:
-				j=i[2]['product_id']
-				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
-		except KeyError:
-			print "Erreur d'index"
-		try:
-			for i in vals['order_line'][0][2]['materiel_line']:
-				j=i[2]['product_id']
-				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
-		except KeyError:
-			print "Erreur d'index"
-		try:
-			for i in vals['order_line'][0][2]['mo_line']:
-				j=i[2]['product_id']
-				self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
-		except KeyError:
-			print "Erreur d'index"
-		return super(Bde,self).create(vals)
+	@api.onchange('coeff')
+	def on_change_coeff(self):
+		for record in self:
+			for line in record.order_line:
+				print line
+				print line.prix_debourse
+				print line.price_unit
+				if(self.coeff.coeff):
+					print "COEFF HERE"
+					print self.coeff.coeff
+					print line.prix_debourse
+					print line.prix_debourse * self.coeff.coeff
+					line.prix_debourse = line.price_unit
+					line.price_unit= line.prix_debourse * self.coeff.coeff
+			
+
+
+
+
+
+
+	# @api.model
+	# def create(self,vals, context=None):
+	# 	print "BDE a Voir"
+	# 	if context is None:
+	# 		context = {}
+	# 	if vals.get('name', '/') == '/':
+	# 		vals['name'] = self.pool.get('ir.sequence').get(self.env.cr, self.env.uid, 'sale.order', context=context) or '/'
+	# 	if vals.get('partner_id') and any(f not in vals for f in ['partner_invoice_id', 'partner_shipping_id', 'pricelist_id', 'fiscal_position']):
+	# 		defaults = self.onchange_partner_id(self.env.cr, self.env.uid, [], vals['partner_id'], context=context)['value']
+	# 		if not vals.get('fiscal_position') and vals.get('partner_shipping_id'):
+	# 			delivery_onchange = self.onchange_delivery_id(self.env.cr, self.env.uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
+	# 			defaults.update(delivery_onchange['value'])
+	# 		vals = dict(defaults, **vals)
+	# 	ctx = dict(context or {}, mail_create_nolog=True)
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['materiaux_line']:
+	# 			print "ITO NY I[2]"
+	# 			print i[2]
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['materiel_line']:
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['mo_line']:
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	new_id = super(Bde, self).create(vals, context=ctx)
+	# 	self.message_post(self.env.cr, self.env.uid, [new_id], body=_("Quotation created"), context=ctx)
+	# 	return {new_id,super(Bde,self).create(vals)}
 
 
 
@@ -152,23 +187,52 @@ class Bde(models.Model):
 				
 		self.order_line = result
 
+
 class GentSaleOrderLine(models.Model):
 	_inherit = "sale.order.line"
+
+	prix_debourse = fields.Float('Prix déboursé',digits_compute= dp.get_precision('Product Price'), store=True, readonly=True, compute='_compute_oe_pu')
+
 	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels", copy=True)
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux", copy=True)
 	mo_lines_subtotal = fields.Float('Total')
-	total = fields.Float(compute='_compute_pu')
-	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'),compute='_compute_pu')
+	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'),compute='_compute_oe_pu', store=True, readonly=True)
+
+	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
+
+	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True), ('gent_type', '=', 'ouvrage_elementaire')], change_default=True, readonly=True, states={'draft': [('readonly', False)]}, ondelete='restrict')
+
+
+	@api.depends('price_unit','product_uom_qty')
+	def _compute_order_line_montant(self):
+		for record in self:
+			record.price_subtotal= record.price_unit * record.product_uom_qty
+
+	@api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
-	def _compute_pu(self):
-		for record in self:
-			somme_mo = sum(line.price_unit for line in record.mo_line)
-		for record in self:
-			somme_materiaux = sum(line.price_unit for line in record.materiel_line)
-		for record in self:
-			somme_materiel = sum(line.price_unit for line in record.materiaux_line)
+	def _compute_oe_pu(self):
+		somme_mo=0
+		somme_materiel=0
+		somme_materiaux=0
+		try:
+			for record in self:
+				somme_mo = sum(line.price_subtotal for line in record.mo_line)
+		except:
+			print "Erreur d'index"
+		try:
+			for record in self:
+				somme_materiaux = sum(line.price_subtotal for line in record.materiel_line)
+		except:
+			print "Erreur d'index"
+		try:
+			for record in self:
+				somme_materiel = sum(line.price_subtotal for line in record.materiaux_line)
+		except:
+			print "Erreur d'index"
+		self.prix_debourse = somme_mo + somme_materiel + somme_materiaux
 		self.price_unit = somme_mo + somme_materiel + somme_materiaux
+
 		# somme_mo = 0
 		# somme_materiaux = 0
 		# somme_materiel = 0
@@ -180,6 +244,26 @@ class GentSaleOrderLine(models.Model):
 		# 	somme_materiel += i[2]['price_unit']
 		# pu = somme_materiel+somme_mo+somme_materiaux
 		# vals['order_line'][0][2]['price_unit'] = pu
+	def create(self, cr, uid, values, context=None):
+		print "CREATING SALE ORDER"
+		if values.get('order_id') and values.get('product_id') and  any(f not in values for f in ['name', 'price_unit', 'product_uom_qty', 'product_uom']):
+			order = self.pool['sale.order'].read(cr, uid, values['order_id'], ['pricelist_id', 'partner_id', 'date_order', 'fiscal_position'], context=context)
+			defaults = self.product_id_change(cr, uid, [], order['pricelist_id'][0], values['product_id'],
+				qty=float(values.get('product_uom_qty', False)),
+				uom=values.get('product_uom', False),
+				qty_uos=float(values.get('product_uos_qty', False)),
+				uos=values.get('product_uos', False),
+				name=values.get('name', False),
+				partner_id=order['partner_id'][0],
+				date_order=order['date_order'],
+				fiscal_position=order['fiscal_position'][0] if order['fiscal_position'] else False,
+				flag=False,  # Force name update
+                context=dict(context or {}, company_id=values.get('company_id'))
+			)['value']
+			if defaults.get('tax_id'):
+				defaults['tax_id'] = [[6, 0, defaults['tax_id']]]
+			values = dict(defaults, **values)
+		return super(GentSaleOrderLine, self).create(cr, uid, values, context=context)
 
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
@@ -190,16 +274,20 @@ class BdeLine(models.Model):
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
-	price_subtotal =  fields.Float('Montant', compute='_compute_subtotal')
+
+
+
+	price_subtotal =  fields.Float('Montant',compute='_compute_subtotal')
 	product_uom_qty =  fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True)
 	product_uom = fields.Many2one('product.uom', 'Unit of Measure ', required=True)
 
+	@api.one
 	@api.depends('price_unit','product_uom_qty')
 	def _compute_subtotal(self):
 		for record in self:
 			record.price_subtotal = record.price_unit * record.product_uom_qty
 
-class OuvrageElementaire(models.Model)
+class OuvrageElementaire(models.Model):
 	_inherit = "mrp.bom"
 
 class Coeff(models.Model):
