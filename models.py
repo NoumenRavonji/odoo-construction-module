@@ -4,7 +4,7 @@
 from openerp import models, fields, api
 from openerp.api import Environment as env
 import openerp.addons.decimal_precision as dp
-
+from openerp.tools.translate import _
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -31,13 +31,16 @@ class AvantMetre(models.Model):
 		product_id = vals['product_tmpl_id']
 		print "hello"
 		# ma_liste = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']
-		print vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
-		ouv_elt = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
-		self.env['product.template'].browse([product_id]).write({'gent_type': 'chantier'})
-		# self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
-		for i in vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']:
-			j=i[2]['product_id']
-			self.env['product.template'].browse([j]).write({'gent_type': 'ouvrage_elementaire'})
+		# print vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
+		try:
+			ouv_elt = vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids'][0][2]['product_id']
+			self.env['product.template'].browse([product_id]).write({'gent_type': 'chantier'})
+			# self.env['product.template'].browse([ouv_elt]).write({'gent_type': 'ouvrage_elementaire'})
+			for i in vals['rubrique_line_ids'][0][2]['rubrique_bom_line_ids']:
+				j=i[2]['product_id']
+				self.env['product.template'].browse([j]).write({'gent_type': 'ouvrage_elementaire'})
+		except:
+			print "IndexError"
 		return super(AvantMetre,self).create(vals)
 
 
@@ -93,42 +96,65 @@ class Bde(models.Model):
 		return { 'value': value}
 
 
-	# @api.model
-	# def create(self,vals, context=None):
+	# def create(self, cr, uid, vals, context=None):
 	# 	print "BDE a Voir"
 	# 	if context is None:
 	# 		context = {}
 	# 	if vals.get('name', '/') == '/':
-	# 		vals['name'] = self.pool.get('ir.sequence').get(self.env.cr, self.env.uid, 'sale.order', context=context) or '/'
+	# 		vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'sale.order', context=context) or '/'
 	# 	if vals.get('partner_id') and any(f not in vals for f in ['partner_invoice_id', 'partner_shipping_id', 'pricelist_id', 'fiscal_position']):
-	# 		defaults = self.onchange_partner_id(self.env.cr, self.env.uid, [], vals['partner_id'], context=context)['value']
+	# 		defaults = self.onchange_partner_id(cr, uid, [], vals['partner_id'], context=context)['value']
 	# 		if not vals.get('fiscal_position') and vals.get('partner_shipping_id'):
-	# 			delivery_onchange = self.onchange_delivery_id(self.env.cr, self.env.uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
+	# 			delivery_onchange = self.onchange_delivery_id(cr, uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
 	# 			defaults.update(delivery_onchange['value'])
 	# 		vals = dict(defaults, **vals)
 	# 	ctx = dict(context or {}, mail_create_nolog=True)
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['materiaux_line']:
-	# 			j=i[2]['product_id']
-	# 			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['materiel_line']:
-	# 			j=i[2]['product_id']
-	# 			self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['mo_line']:
-	# 			j=i[2]['product_id']
-	# 			self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	new_id = super(Bde, self).create(vals, context=ctx)
-	# 	self.message_post(self.env.cr, self.env.uid, [new_id], body=_("Quotation created"), context=ctx)
-	# 	return {new_id,super(Bde,self).create(vals)}
+	# 	new_id = super(Bde, self).create(cr, uid, vals, context=ctx)
+	# 	self.message_post(cr, uid, [new_id], body=_("Quotation created"), context=ctx)
+		# try:
+		# 	for i in vals['order_line'][0][2]['materiaux_line']:
+		# 		j=i[2]['product_id']
+		# 		env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		# try:
+		# 	for i in vals['order_line'][0][2]['materiel_line']:
+		# 		j=i[2]['product_id']
+		# 		env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		# try:
+		# 	for i in vals['order_line'][0][2]['mo_line']:
+		# 		j=i[2]['product_id']
+		# 		env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		# print "ici"
+		# print vals['name']
+		# return {new_id, super(Bde,self).create(cr, uid,vals, context)}
 
+	def write(self,cr, uid, ids,vals,context=None):
+		print "BDE a voir"
+		print vals
+		# try:
+		# 	for i in vals['order_line'][0][2]['materiaux_line']:
+		# 		j=i[2]['product_id']
+		# 		self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		# try:
+		# 	for i in vals['order_line'][0][2]['materiel_line']:
+		# 		j=i[2]['product_id']
+		# 		self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		# try:
+		# 	for i in vals['order_line'][0][2]['mo_line']:
+		# 		j=i[2]['product_id']
+		# 		self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+		# except KeyError:
+		# 	print "Erreur d'index"
+		return super(Bde,self).write(cr, uid, ids,vals, context)
 
 
 	@api.onchange('avantmetre')

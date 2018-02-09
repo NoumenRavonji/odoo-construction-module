@@ -31,9 +31,9 @@
     'data': [
         # 'security/ir.model.access.csv',
         'templates.xml',
-        'views/devis.xml',
-        'views/bde.xml',
         'views/type_produit.xml',
+        'views/bde.xml',
+        'views/devis.xml',
         'views/coeff.xml'
     ],
     # only loaded in demonstration mode

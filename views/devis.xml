@@ -97,7 +97,7 @@
              its parent openacademy_menu and *after* its
              action course_list_action -->
         <menuitem id="avant_metre_menu" name="Avant-Métré" parent="gent_devis_menu"
-                  action="avant_metre_list_action"/>
+                  action="avant_metre_list_action" sequence="1"/>
         <!-- Full id location:
              action="openacademy.course_list_action"
              It is not required when it is the same module -->

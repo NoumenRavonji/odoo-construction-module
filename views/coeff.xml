@@ -94,6 +94,6 @@
 		</record>
         
 		<menuitem id="coeff_menu" name="Coefficient de vente K" parent="gent_devis_menu"
-                  action="coeff_list_action"/>
+                  action="coeff_list_action" sequence="3"/>
      </data>
 </openerp>
