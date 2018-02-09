@@ -21,8 +21,8 @@
                                         <group>
                                             <field name="product_id"
                                                 context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
-                                                groups="base.group_user"
-                                                on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, False, product_uos_qty, False, name, parent.partner_id, False, True, parent.date_order, False, parent.fiscal_position, False, context)" domain="[('gent_type', '=', 'ouvrage_elementaire')]"/>
+                                                on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, False, product_uos_qty, False, name, parent.partner_id, False, True, parent.date_order, False, parent.fiscal_position, False, context)" domain="[('gent_type', '=', 'ouvrage_elementaire')]"  />
+
                                             <label for="product_uom_qty"/>
                                             <div>
                                                 <field
@@ -38,7 +38,8 @@
                                                 <field name="product_uos_qty" class="oe_inline"/>
                                                 <field name="product_uos" options='{"no_open": True}' class="oe_inline"/>
                                             </div>
-                                            <field name="price_unit"/>
+                                            <field name="price_unit" invisible="1"/>
+                                            <field name="prix_debourse" />
                                             <label for="discount" groups="sale.group_discount_per_so_line"/>
                                             <div name="discount" groups="sale.group_discount_per_so_line">
                                                 <field name="discount" class="oe_inline"/>
@@ -115,6 +116,8 @@
                                     <field name="product_uos_qty" groups="product.group_uos" invisible="1"/>
                                     <field name="product_uos" string="UoS" groups="product.group_uos" invisible="1"/>
                                     <field name="price_unit"/>
+
+                                    <field name="prix_debourse" />
                                     <field name="tax_id" widget="many2many_tags" domain="[('parent_id','=',False),('type_tax_use','&lt;&gt;','purchase')]"/>
                                     <field name="discount" groups="sale.group_discount_per_so_line"/>
                                     <field name="price_subtotal"/>
@@ -126,8 +129,16 @@
                 <xpath expr="//field[@name='partner_id']" position="replace">
                     <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}' style="color:green"/>
                 </xpath>
+
+                <xpath expr="//group[@name='sale_total']" position="after">
+                    <group>
+                        <field name="coeff"  groups="base.group_user"/>
+                    </group>
+                </xpath>
             </field>
         </record>
+
+
         
 
     	<record id="bde_list_action" model="ir.actions.act_window">
