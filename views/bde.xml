@@ -57,6 +57,10 @@
                                     <label for="name"/>
                                     <field name="name" style="background-color: white;"/>
 
+                                    <label for="ouvrage_elementaire"/>
+                                    <field name="ouvrage_elementaire" widget="selection" style="background-color: white;"/>
+
+                                 
                                     <label for="materiaux_line"/>
                     <field name="materiaux_line" widget="one2many_list" >
                           <tree string="Détails Main d'oeuvre" editable="bottom">

@@ -133,20 +133,6 @@ class Bde(models.Model):
 				line.prix_debourse = somme_mo + somme_materiel + somme_materiaux
 				line.price_unit = somme_mo + somme_materiel + somme_materiaux
 
-				
-				if(line.ouvrage_elementaire.mo_line):
-					line.mo_line = line.ouvrage_elementaire.mo_line
-					for line2 in line.mo_line:
-						line2.gent_mo_order_line_id = self.id
-				if(line.ouvrage_elementaire.materiaux_line):
-					line.materiaux_line = line.ouvrage_elementaire.materiaux_line
-					for line2 in line.materiaux_line:
-						line2.gent_materiaux_order_line_id = self.id
-				if(line.ouvrage_elementaire.materiel_line):
-					line.materiel_line = line.ouvrage_elementaire.materiel_line
-					for line2 in line.materiel_line:
-						line2.gent_materiel_order_line_id = self.id
-
 				if(self.coeff.coeff):
 					print "COEFF HERE"
 					print line.id
@@ -166,32 +152,7 @@ class Bde(models.Model):
 
 
 
-	# def create(self, cr, uid, values, context=None):
-	# 	if values.get('order_id') and values.get('product_id') and  any(f not in values for f in ['name', 'price_unit', 'product_uom_qty', 'product_uom']):
-	# 		order = self.pool['sale.order'].read(cr, uid, values['order_id'], ['pricelist_id', 'partner_id', 'date_order', 'fiscal_position'], context=context)
-	# 		defaults = self.product_id_change(cr, uid, [], order['pricelist_id'][0], values['product_id'],
-	# 			qty=float(values.get('product_uom_qty', False)),
-	# 			uom=values.get('product_uom', False),
-	# 			qty_uos=float(values.get('product_uos_qty', False)),
-	# 			uos=values.get('product_uos', False),
-	# 			name=values.get('name', False),
-	# 			partner_id=order['partner_id'][0],
-	# 			date_order=order['date_order'],
-	# 			fiscal_position=order['fiscal_position'][0] if order['fiscal_position'] else False,
-	# 			flag=False,  # Force name update
-	# 			context=dict(context or {}, company_id=values.get('company_id'))
- #            )['value']
-	# 		if defaults.get('tax_id'):
-	# 			defaults['tax_id'] = [[6, 0, defaults['tax_id']]]
-	# 		values = dict(defaults, **values)
 
-	# 	if(!self.pool['gent.ouvrage.elementaire'].search([('product_id', '=', values.get('product_id'))])):
-	# 		self.pool['gent.ouvrage.elementaire'].create({
-	# 			'product_id': values.get('product_id'),
-
-	# 			})
-
-	# 	return super(sale_order_line, self).create(cr, uid, values, context=context)
 	# @api.model
 	# def create(self,vals, context=None):
 	# 	print "BDE a Voir"
@@ -281,7 +242,6 @@ class GentSaleOrderLine(models.Model):
 	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels", copy=True)
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux", copy=True)
-
 	mo_lines_subtotal = fields.Float('Total')
 	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True)
 
@@ -353,31 +313,12 @@ class GentSaleOrderLine(models.Model):
 			values = dict(defaults, **values)
 		return super(GentSaleOrderLine, self).create(cr, uid, values, context=context)
 
-	@api.onchange('ouvrage_elementaire')
-	def on_change_ouvrage_elementaire(self):
-		if(self.ouvrage_elementaire.mo_line):
-			self.mo_line = self.ouvrage_elementaire.mo_line
-			for line in self.mo_line:
-				line.gent_mo_order_line_id = self.id
-		if(self.ouvrage_elementaire.materiaux_line):
-			self.materiaux_line = self.ouvrage_elementaire.materiaux_line
-			for line in self.materiaux_line:
-				line.gent_materiaux_order_line_id = self.id
-		if(self.ouvrage_elementaire.materiel_line):
-			self.materiel_line = self.ouvrage_elementaire.materiel_line
-			for line in self.materiel_line:
-				self.gent_materiel_order_line_id = self.id
-
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
 
 	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
 	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
 	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-
-	gent_oe_mo_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_materiel_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_materaux_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='restrict', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
@@ -396,18 +337,15 @@ class BdeLine(models.Model):
 
 class OuvrageElementaire(models.Model):
 	_name = "gent.ouvrage.elementaire"
-	_rec_name="product_id"
-
-	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True), ('gent_type', '=', 'ouvrage_elementaire')], change_default=True, required=True, ondelete='restrict')
-
+	name = fields.Char("Ouvrage élémentaire", required=True)
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute='_compute_oe_pu')
 
-	mo_line = fields.One2many('gent.bde.composant', 'gent_oe_mo_line_id', "Main d'oeuvre", copy=True)
-	materiel_line = fields.One2many('gent.bde.composant', 'gent_oe_materiel_id', "Matériels", copy=True)
-	materiaux_line = fields.One2many('gent.bde.composant', 'gent_oe_materaux_id', "Matériaux", copy=True)
+	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels", copy=True)
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux", copy=True)
 	price_unit= fields.Float('Unit Price', store=True, readonly=True)
-	product_uom_qty= fields.Float('Quantity',default=1, digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True)
-	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True)
+	product_uom_qty= fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True, states={'draft': [('readonly', False)]})
+	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True, readonly=True, states={'draft': [('readonly', False)]})
 
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
 
