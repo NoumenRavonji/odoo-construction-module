@@ -31,11 +31,11 @@
     'data': [
         # 'security/ir.model.access.csv',
         'templates.xml',
-        'views/devis.xml',
-        'views/bde.xml',
         'views/type_produit.xml',
         'views/coeff.xml',
-        'views/ouvrage_elementaire.xml'
+        'views/ouvrage_elementaire.xml',
+        'views/bde.xml',
+        'views/devis.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
