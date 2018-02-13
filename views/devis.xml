@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <!-- window action -->
+        <!--
+            The following tag is an action definition for a "window action",
+            that is an action opening a view or a set of views
+        -->
+        <record id="avant_metre_form" model="ir.ui.view">
+            <field name="name">mrp.bom.form.inherit</field>
+            <field name="model">gent.avantmetre</field>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="arch" type="xml">
+            
+                <xpath expr="//field[@name='product_tmpl_id']" position="replace">
+                   <field name="partner_id" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
+                   <field name="product_tmpl_id" on_change="onchange_product_tmpl_id(product_tmpl_id, product_qty, context)" domain="[('gent_type', '=', 'chantier')]" string="Chantier"/>
+                   <!-- domain="[('chantier','=',True)]" -->
+                </xpath>
+                <xpath expr="//field[@name='product_tmpl_id']" position="after">
+                   <field name="prix_total"/>
+                </xpath>
+                <xpath expr="//field[@name='product_id']" position="replace">
+                 
+                </xpath>
+                 <xpath expr="//field[@name='date_start']" position="replace">
+                    <!-- <field name="rubrique"/> -->
+                </xpath>
+                <xpath expr="//field[@name='product_qty']" position="before">
+                </xpath>
+                <xpath expr="//field[@name='code']" position="before">
+                    <field name="nom"/>
+                </xpath>
+                <xpath expr="//field[@name='bom_line_ids']" position="replace">
+                         
+                    <field name="rubrique_line_ids" open="false">
+                        <form editable="bottom" open="false">
+                              <group>
+                              <field string="Rubrique" name="rubrique"/>
+                              </group>
+                       
+                       
+                              <field name="rubrique_bom_line_ids"  widget="one2many_list" >
+
+                                  <tree string="Ouvrage élémentaire" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+            
+                                   <!--  <field name="rubrique" string="Rubrique"/> -->
+                                    <field name="product_id" string="Ouvrage élémentaire" on_change="onchange_product_id(product_id, product_qty)" domain="[('gent_type', '=', 'ouvrage_elementaire')]"/>
+                                    <!-- <field name="type"/> -->
+                                    <field name="product_qty" string="Quantité d'article"/>
+                                    <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
+                                    <!-- <field name="product_rounding"/> -->
+                                    <!-- <field name="product_efficiency" string="Rendement" /> -->
+                                  </tree
+                                  >
+                              </field>
+                        </form>
+                       
+                      
+                  </field>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="avantmetre_rubrique_tree">
+            <field name="name">gent.avantmetre.rubrique.tree</field>
+            <field name="model">gent.avantmetre.rubrique</field>
+          
+            <field name="arch" type="xml">
+               <tree string="Rubrique">
+                    <field name="rubrique"/>
+                    
+                </tree>
+            </field>
+
+        </record>
+        
+        <record model="ir.actions.act_window" id="avant_metre_list_action">
+            <field name="name">Avant Métré</field>
+            <field name="res_model">gent.avantmetre</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="avant_metre_form"/>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un avant métré
+                </p>
+            </field>
+        </record>
+
+        
+        <!-- top level menu: no parent -->
+        <menuitem id="main_gent_devis_menu" name="Devis | Offres"/>
+        <!-- A first level in the left side menu is needed
+             before using action= attribute -->
+        <menuitem id="gent_devis_menu" name="Devis"
+                  parent="main_gent_devis_menu"/>
+        <!-- the following menuitem should appear *after*
+             its parent openacademy_menu and *after* its
+             action course_list_action -->
+        <menuitem id="avant_metre_menu" name="Avant-Métré" parent="gent_devis_menu"
+                  action="avant_metre_list_action" sequence="1"/>
+        <!-- Full id location:
+             action="openacademy.course_list_action"
+             It is not required when it is the same module -->
+    </data>
+</openerp>

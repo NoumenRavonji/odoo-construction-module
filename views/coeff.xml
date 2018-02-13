@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        <record id="gent_coeff_tree" model="ir.ui.view">
+            <field name="name">gent.coeff.form</field>
+            <field name="model">gent.coeff</field>
+
+            <field name="arch" type="xml">
+                <tree string="Coefficient de vente">
+                        <field name="coeff" />
+                </tree>
+
+            </field>
+        </record>
+
+    	<record id="gent_coeff_form" model="ir.ui.view">
+			<field name="name">gent.coeff.form</field>
+			<field name="model">gent.coeff</field>
+
+			<field name="arch" type="xml">
+				<form string="Coefficient de vente">
+					
+					 <group>	
+					 	<h3>
+					 	<label for="frais_1"/>
+						<field name="frais_1"/>
+						</h3>
+					 </group>
+					
+               		
+             
+         				 <group>
+         				 	<field name="frais_11"/>
+         				 	<field name="frais_12"/>
+         				 	<field name="frais_13"/>
+         				 	<field name="frais_14"/>
+         				 </group>
+
+         			<group>	
+					 	<h3>
+					 	<label for="frais_2"/>
+						<field name="frais_2"/>
+						</h3>
+					 </group>
+					
+               		
+             
+         				 <group>
+         				 	<field name="frais_21"/>
+         				 	<field name="frais_22"/>
+         				 	<field name="frais_23"/>
+         				 	<field name="frais_24"/>
+         				 </group>
+
+         			<group>	
+					 	<h3>
+					 	<label for="frais_3"/>
+						<field name="frais_3"/>
+						</h3>
+					 </group>
+					
+               		
+             
+         				 <group>
+         				 	<field name="frais_31"/>
+         				 </group>
+
+         			<hr/>
+
+         			<h2>
+                        <group>
+         				<!-- <label for="coeff"/> -->
+						<field name="coeff"/>
+                        </group>
+
+         			</h2>
+
+          		</form>
+            
+            </field>
+		</record>
+
+
+    	<record id="coeff_list_action" model="ir.actions.act_window">
+			<field name="name">Coefficient de vente K</field>
+			<field name="res_model">gent.coeff</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un coefficient de vente K
+                </p>
+            </field>
+		</record>
+        
+		<menuitem id="coeff_menu" name="Coefficient de vente K" parent="gent_devis_menu"
+                  action="coeff_list_action" sequence="3"/>
+     </data>
+</openerp>
