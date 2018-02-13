@@ -253,10 +253,10 @@ class Bde(models.Model):
 				delivery_onchange = self.onchange_delivery_id(cr, uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
 				defaults.update(delivery_onchange['value'])
 			vals = dict(defaults, **vals)
-		ctx = dict(context or {}, mail_create_nolog=True)	
+		ctx = dict(context or {}, mail_create_nolog=True)
 		try:
 			for k in range(0,len(vals['order_line'])):
-				print (vals['order_line'][k])
+				# print (vals['order_line'][k])
 				try:
 					for i in range (0,len(vals['order_line'][k][2]['materiel_line'])):
 						if(len(vals['order_line'][k][2]['materiel_line'][i][2])!=0):
