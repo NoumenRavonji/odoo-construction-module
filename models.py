@@ -86,8 +86,6 @@ class Bde(models.Model):
 	
 
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
-
-
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
@@ -101,6 +99,7 @@ class Bde(models.Model):
 	def on_change_coeff(self):
 		for record in self:
 			for line in record.order_line:
+				print "CHANGE coef"
 				print line
 				print line.prix_debourse
 				print line.price_unit
@@ -110,17 +109,29 @@ class Bde(models.Model):
 					print self.coeff.coeff
 					print line.prix_debourse
 					print line.prix_debourse * self.coeff.coeff
-					line.prix_debourse = line.price_unit
 					line.price_unit = line.prix_debourse * self.coeff.coeff
-
+					mo_line = []
+					if(line.mo_line):
+						for line2 in line.mo_line:
+							mo_line.append([])
+					line.write( {
+						'price_unit': line.prix_debourse * self.coeff.coeff
+						})
 					print line.price_unit
 				else:
-					line.price_unit= line.prix_debourse
+					# line.update({
+					# 	'price_unit': line.prix_debourse
+					# 	})
+					line.price_unit = line.prix_debourse
 	
+	@api.one
 	@api.onchange('order_line')
 	def on_change_order_line(self):
 		print "CHANGE ORDER LINE"
+		order_line_result = []
 		for record in self:
+			print "record"
+			print record
 			for line in record.order_line:
 				somme_mo=0
 				somme_materiel=0
@@ -131,45 +142,34 @@ class Bde(models.Model):
 				for line2 in line.materiel_line:
 					somme_materiel += line2.price_subtotal
 				for line2 in line.materiaux_line:
+					print "MATERIAUX LINE MODIF"
+					print line2.product_id
 					somme_materiaux += line2.price_subtotal
 			
-				line.prix_debourse = somme_mo + somme_materiel + somme_materiaux
-				line.price_unit = somme_mo + somme_materiel + somme_materiaux
-
-				
-				if(line.ouvrage_elementaire.mo_line):
-					line.mo_line = line.ouvrage_elementaire.mo_line
-					for line2 in line.mo_line:
-						line2.gent_mo_order_line_id = self.id
-					self.env.cr.commit()
-				if(line.ouvrage_elementaire.materiaux_line):
-					line.materiaux_line = line.ouvrage_elementaire.materiaux_line
-					for line2 in line.materiaux_line:
-						line2.gent_materiaux_order_line_id = self.id
-					self.env.cr.commit()
-				if(line.ouvrage_elementaire.materiel_line):
-					line.materiel_line = line.ouvrage_elementaire.materiel_line
-					for line2 in line.materiel_line:
-						line2.gent_materiel_order_line_id = self.id
-					self.env.cr.commit()
-
-				if(self.coeff.coeff):
-					print "COEFF HERE"
-					print line.id
-					print self.coeff.coeff
-					print line.prix_debourse
-					print line.prix_debourse * self.coeff.coeff
-					line.prix_debourse = line.price_unit
-					line.price_unit = line.prix_debourse * self.coeff.coeff
-				else:
-					print "NOT COEFF"
-					print line.prix_debourse
-					line.price_unit = line.prix_debourse
-
-			
+				# line.write({
+				# 	'prix_debourse': somme_mo + somme_materiel + somme_materiaux,
+				# 	'price_unit': somme_mo + somme_materiel + somme_materiaux
+				# 	})
 
 
+				# if(self.coeff.coeff):
+				# 	print "COEFF HERE"
+				# 	print line.id
+				# 	print self.coeff.coeff
+				# 	print line.prix_debourse
+				# 	print line.prix_debourse * self.coeff.coeff
+				# 	line.write({
+				# 		'prix_debourse': line.price_unit,
+				# 		'price_unit': line.prix_debourse * self.coeff.coeff
+				# 		})
+				# else:
+				# 	print "NOT COEFF"
+				# 	print line.prix_debourse
+				# 	line.write({
+				# 		'price_unit': line.prix_debourse
+				# 		})
 
+			record.currency_id = self.env.ref('base.main_company').currency_id
 
 
 	# def create(self, cr, uid, values, context=None):
@@ -285,45 +285,46 @@ class Bde(models.Model):
 			print ("no")
 		new_id = super(Bde, self).create(cr, uid, vals, context=ctx)
 
-
-
 		self.message_post(cr, uid, [new_id], body=_("Quotation created"), context=ctx)
 
 		return new_id
 
+	# @api.model
+	# def create(self, vals, context=None):
+	# 	print "CREATING"
+	# 	print vals
+	# 	pass
+
 	def write(self,cr, uid, ids,vals,context=None):
 		print "Modifier"
 		print vals
-		# for i in range(0,len(vals['order_line'])):
-		# 	if vals['order_line'][i][2] != False:
-		# 		try:
-		# 			for k in range(0,len(vals['order_line'][i][2]['materiaux_line'])):
-		# 				print vals['order_line'][i][2]['materiaux_line'][k][2]
-		# 				if vals['order_line'][i][2]['materiaux_line'][k][2] != False:
-		# 					mll = vals['order_line'][i][2]['materiaux_line'][k][2]['product_id']
-		# 					self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiaux'})
-		# 		except:
-		# 			print("aucune modification materiaux_line")
-		# 		try:
-		# 			for k in range(0,len(vals['order_line'][i][2]['materiel_line'])):
-		# 				print vals['order_line'][i][2]['materiel_line'][k][2]
-		# 				if vals['order_line'][i][2]['materiel_line'][k][2] != False:
-		# 					ml= vals['order_line'][i][2]['materiel_line'][k][2]['product_id']
-		# 					self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiel'})
-		# 		except:
-		# 			print("aucune modification materiel_line")
-		# 		try:
-		# 			for k in range(0,len(vals['order_line'][i][2]['mo_line'])):
-		# 				print vals['order_line'][i][2]['mo_line'][k][2]
-		# 				if vals['order_line'][i][2]['mo_line'][k][2] != False:
-		# 					mo = vals['order_line'][i][2]['mo_line'][k][2]['product_id'] 
-		# 					self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
-		# 		except:
-		# 			print "aucune modification mo_line"
-		return super(Bde, self).write(cr, uid,ids, vals, context)
-
-
-
+		for i in range(0,len(vals['order_line'])):
+			if vals['order_line'][i][2] != False:
+				try:
+					for k in range(0,len(vals['order_line'][i][2]['materiaux_line'])):
+						print vals['order_line'][i][2]['materiaux_line'][k][2]
+						if vals['order_line'][i][2]['materiaux_line'][k][2] != False:
+							mll = vals['order_line'][i][2]['materiaux_line'][k][2]['product_id']
+							self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiaux'})
+				except:
+					print("aucune modification materiaux_line")
+				try:
+					for k in range(0,len(vals['order_line'][i][2]['materiel_line'])):
+						print vals['order_line'][i][2]['materiel_line'][k][2]
+						if vals['order_line'][i][2]['materiel_line'][k][2] != False:
+							ml= vals['order_line'][i][2]['materiel_line'][k][2]['product_id']
+							self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiel'})
+				except:
+					print("aucune modification materiel_line")
+				try:
+					for k in range(0,len(vals['order_line'][i][2]['mo_line'])):
+						print vals['order_line'][i][2]['mo_line'][k][2]
+						if vals['order_line'][i][2]['mo_line'][k][2] != False:
+							mo = vals['order_line'][i][2]['mo_line'][k][2]['product_id'] 
+							self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
+				except:
+					print "aucune modification mo_line"
+				return super(Bde, self).write(cr, uid,ids, vals, context)
 
 	@api.onchange('avantmetre')
 	def on_change_avantmetre(self):
@@ -368,9 +369,9 @@ class GentSaleOrderLine(models.Model):
 
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute='_compute_oe_pu')
 
-	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre", copy=True)
-	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels", copy=True)
-	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux", copy=True)
+	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre")
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels")
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux")
 
 	mo_lines_subtotal = fields.Float('Total')
 	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True)
@@ -446,18 +447,44 @@ class GentSaleOrderLine(models.Model):
 	@api.onchange('ouvrage_elementaire')
 	def on_change_ouvrage_elementaire(self):
 		if(self.ouvrage_elementaire.mo_line):
-			self.mo_line = self.ouvrage_elementaire.mo_line
-			for line in self.mo_line:
-				line.gent_mo_order_line_id = self.id
+			self.mo_line = None
+			
+			for line in self.ouvrage_elementaire.mo_line:
+				self.mo_line +=self.mo_line.new({
+						'product_id': line.product_id,
+						'price_unit': line.price_unit,
+						'price_subtotal': line.price_subtotal,
+						'product_uom_qty': line.product_uom_qty,
+						'product_uom': line.product_uom,
+						'gent_mo_order_line_id': self.id
+
+					})
 		if(self.ouvrage_elementaire.materiaux_line):
-			self.materiaux_line = self.ouvrage_elementaire.materiaux_line
-			for line in self.materiaux_line:
-				line.gent_materiaux_order_line_id = self.id
+			for line3 in self.materiaux_line:
+				line3 = False
+			for line in self.ouvrage_elementaire.materiaux_line:
+				self.materiaux_line +=self.materiaux_line.new({
+						'product_id': line.product_id,
+						'price_unit': line.price_unit,
+						'price_subtotal': line.price_subtotal,
+						'product_uom_qty': line.product_uom_qty,
+						'product_uom': line.product_uom,
+						'gent_materiaux_order_line_id': self.id
+
+					})
 		if(self.ouvrage_elementaire.materiel_line):
 			self.materiel_line = self.ouvrage_elementaire.materiel_line
-			for line in self.materiel_line:
-				self.gent_materiel_order_line_id = self.id
-		self.env.cr.commit()
+			for line in self.ouvrage_elementaire.materiel_line:
+				self.materiel_line +=self.materiel_line.new({
+						'product_id': line.product_id,
+						'price_unit': line.price_unit,
+						'price_subtotal': line.price_subtotal,
+						'product_uom_qty': line.product_uom_qty,
+						'product_uom': line.product_uom,
+						'gent_materiel_order_line_id': self.id
+
+					})
+
 
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
