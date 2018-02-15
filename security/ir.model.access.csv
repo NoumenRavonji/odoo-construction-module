@@ -1,2 +1,15 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_gent_gent,gent.gent,model_gent_gent,,1,0,0,0
+access_gent_avantmetre,gent.avantmetre,model_gent_avantmetre,group_coordinateur_travaux,1,1,1,1
+access_gent_avantmetre_rubrique,gent.avantmetre.rubrique,model_gent_avantmetre_rubrique,group_coordinateur_travaux,1,1,1,1
+access_gent_avantmetre_line,gent.avantmetre.line,model_gent_avantmetre_line,group_coordinateur_travaux,1,1,1,1
+access_gent_product_template,gent.product.template,model_product_template,group_coordinateur_travaux,1,1,1,1
+access_gent_sale_order,gent.sale.order,model_sale_order,group_coordinateur_travaux,1,1,1,1
+access_gent_sale_order_line,gent.sale.order.line,model_sale_order_line,group_coordinateur_travaux,1,1,1,1
+access_gent_bde_composant,gent.bde.composant,model_gent_bde_composant,group_coordinateur_travaux,1,1,1,1
+access_gent_ouvrage_elementaire,gent.ouvrage.elementaire,model_gent_ouvrage_elementaire,group_coordinateur_travaux,1,1,1,1
+access_gent_coeff,gent.coeff,model_gent_coeff,group_coordinateur_travaux,1,1,1,1
+
+report_layout_category_1,report_layout_category_1,model_sale_layout_category,group_coordinateur_travaux,1,1,1,1
+
+access_gent_stock_move_manager,stock.move manager,model_stock_move,group_coordinateur_travaux,1,1,1,1
+access_gent_stock_picking_user,stock.picking user,model_stock_picking,group_coordinateur_travaux,1,1,1,1

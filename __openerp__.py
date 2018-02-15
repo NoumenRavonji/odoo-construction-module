@@ -29,13 +29,14 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
+        'security/gent_security.xml',
         'templates.xml',
         'views/type_produit.xml',
         'views/coeff.xml',
         'views/ouvrage_elementaire.xml',
         'views/bde.xml',
-        'views/devis.xml'
+        'views/avant_metre.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

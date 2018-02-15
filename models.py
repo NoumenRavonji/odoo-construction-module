@@ -96,34 +96,105 @@ class Bde(models.Model):
 		return { 'value': value}
 
 
-	@api.onchange('coeff')
-	def on_change_coeff(self):
-		for record in self:
-			for line in record.order_line:
-				print "CHANGE coef"
-				print line
-				print line.prix_debourse
-				print line.price_unit
-				if(self.coeff.coeff):
-					print "COEFF HERE"
-					print line.id
-					print self.coeff.coeff
-					print line.prix_debourse
-					print line.prix_debourse * self.coeff.coeff
-					line.price_unit = line.prix_debourse * self.coeff.coeff
-					mo_line = []
-					if(line.mo_line):
-						for line2 in line.mo_line:
-							mo_line.append([])
-					line.write( {
-						'price_unit': line.prix_debourse * self.coeff.coeff
-						})
-					print line.price_unit
-				else:
-					# line.update({
-					# 	'price_unit': line.prix_debourse
-					# 	})
-					line.price_unit = line.prix_debourse
+	# @api.onchange('coeff')
+	# def on_change_coeff(self):
+		
+	# 	if(self.coeff.coeff):
+	# 		for line in self.order_line:			
+	# 			print "CHANGE LINE COEFF"
+	# 			print self.coeff.coeff
+	# 			print line.prix_debourse
+	# 			print line.prix_debourse * self.coeff.coeff
+	# 			materiaux_line = []
+	# 			if(line.materiaux_line):
+	# 				for line2 in line.materiaux_line:
+	# 					materiaux_line.append((0,False, {
+	# 							'product_id': line2.product_id.id,
+	# 							'product_uom_qty': line2.product_uom_qty,
+	# 							'product_uom': line2.product_uom.id,
+	# 							'price_unit': line2.price_unit,
+	# 							'price_subtotal': line2.price_subtotal
+	# 							}))
+	# 			line.price_unit= line.prix_debourse * self.coeff.coeff
+	# 			order_line.append((1, line.id,{
+	# 				'product_id': line.product_id.id,
+	# 				'product_uom': line.product_uom.id,
+	# 				'product_uom_qty': line.product_uom_qty,
+	# 				'price_unit': line.price_unit,
+	# 				'prix_debourse': line.prix_debourse,
+	# 				'price_subtotal': line.price_subtotal,
+	# 				'materiaux_line': materiaux_line,
+	# 				'ouvrage_elementaire': line.ouvrage_elementaire.id
+	# 				}))
+	# 	return {'value':{'order_line': order_line}}
+					
+
+
+
+	# @api.onchange('coeff')
+	# def on_change_coeff(self):
+	# 	for record in self:
+	# 		for line in record.order_line:
+	# 			print "CHANGE coef"
+	# 			print line
+	# 			print line.prix_debourse
+	# 			print line.price_unit
+	# 			if(self.coeff.coeff):
+	# 				print "COEFF HERE"
+	# 				print line.id
+	# 				print self.coeff.coeff
+	# 				print line.prix_debourse
+	# 				print line.prix_debourse * self.coeff.coeff
+	# 				line.price_unit = line.prix_debourse * self.coeff.coeff
+	# 				mo_line = []
+	# 				materiaux_line = []
+	# 				materiel_line = []
+	# 				if(line.mo_line):
+	# 					for line2 in line.mo_line:
+	# 						mo_line.append([0,0,{
+	# 							'product_id': line2.product_id,
+	# 							'price_unit': line2.price_unit,
+	# 							'price_subtotal': line2.price_subtotal,
+	# 							'product_uom_qty': line2.product_uom_qty,
+	# 							'product_uom': line2.product_uom.id,
+	# 							'gent_mo_order_line_id': line.id
+	# 							}])
+	# 				if(line.materiaux_line):
+	# 					for line2 in line.materiaux_line:
+	# 						materiaux_line.append([0,0,{
+	# 							'product_id': line2.product_id.id,
+	# 							'price_unit': line2.price_unit,
+	# 							'price_subtotal': line2.price_subtotal,
+	# 							'product_uom_qty': line2.product_uom_qty,
+	# 							'product_uom': line2.product_uom.id,
+	# 							'gent_materiaux_order_line_id': line.id
+	# 							}])
+	# 				if(line.materiel_line):
+	# 					for line2 in line.materiel_line:
+	# 						materiel_line.append([0,0,{
+	# 							'product_id': line2.product_id.id,
+	# 							'price_unit': line2.price_unit,
+	# 							'price_subtotal': line2.price_subtotal,
+	# 							'product_uom_qty': line2.product_uom_qty,
+	# 							'product_uom': line2.product_uom.id,
+	# 							'gent_materiel_order_line_id': line.id
+	# 							}])
+	# 				line.write( {
+	# 					'price_unit': line.prix_debourse * self.coeff.coeff,
+	# 					'ouvrage_elementaire': line.ouvrage_elementaire.id,
+	# 					'prix_debourse' : line.prix_debourse,
+	# 					"price_subtotal": line.price_subtotal,
+	# 					'product_id': line.product_id.id,
+	# 					'mo_line': mo_line,
+	# 					'materiel_line': materiel_line,
+	# 					'materiaux_line': materiaux_line
+	# 					})
+	# 				print line.price_unit
+	# 			else:
+	# 				# line.update({
+	# 				# 	'price_unit': line.prix_debourse
+	# 				# 	})
+	# 				line.price_unit = line.prix_debourse
 	
 	@api.one
 	@api.onchange('order_line')
@@ -233,44 +304,59 @@ class Bde(models.Model):
 
 		return new_id
 
-	# @api.model
-	# def create(self, vals, context=None):
-	# 	print "CREATING"
-	# 	print vals
-	# 	pass
+
 
 	def write(self,cr, uid, ids,vals,context=None):
 		print "Modifier"
+		# self.button_dummy(cr,uid, ids,vals)
 		print vals
-		for i in range(0,len(vals['order_line'])):
-			if vals['order_line'][i][2] != False:
-				try:
-					for k in range(0,len(vals['order_line'][i][2]['materiaux_line'])):
-						print vals['order_line'][i][2]['materiaux_line'][k][2]
-						if vals['order_line'][i][2]['materiaux_line'][k][2] != False:
-							mll = vals['order_line'][i][2]['materiaux_line'][k][2]['product_id']
-							self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiaux'})
-				except:
-					print("aucune modification materiaux_line")
-				try:
-					for k in range(0,len(vals['order_line'][i][2]['materiel_line'])):
-						print vals['order_line'][i][2]['materiel_line'][k][2]
-						if vals['order_line'][i][2]['materiel_line'][k][2] != False:
-							ml= vals['order_line'][i][2]['materiel_line'][k][2]['product_id']
-							self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiel'})
-				except:
-					print("aucune modification materiel_line")
-				try:
-					for k in range(0,len(vals['order_line'][i][2]['mo_line'])):
-						print vals['order_line'][i][2]['mo_line'][k][2]
-						if vals['order_line'][i][2]['mo_line'][k][2] != False:
-							mo = vals['order_line'][i][2]['mo_line'][k][2]['product_id'] 
-							self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
-				except:
-					print "aucune modification mo_line"
-				return super(Bde, self).write(cr, uid,ids, vals, context)
 
+		if('coeff' in vals):
+			coeff = self.pool.get('gent.coeff').browse(cr,uid,[vals["coeff"]]).coeff
+			order_line = self.pool.get("sale.order").browse(cr,uid,ids)
+			print order_line
+			for line in self.pool.get("sale.order").browse(cr,uid,ids).order_line:
+				print "Line"
+				print line
+				line.write({
+					'price_unit': line.prix_debourse * coeff
+				})
+				print line.price_unit
 
+		if('order_line' in vals):
+			for i in range(0,len(vals['order_line'])):
+				if vals['order_line'][i][2] != False:
+					try:
+						for k in range(0,len(vals['order_line'][i][2]['materiaux_line'])):
+							print vals['order_line'][i][2]['materiaux_line'][k][2]
+							if vals['order_line'][i][2]['materiaux_line'][k][2] != False:
+								mll = vals['order_line'][i][2]['materiaux_line'][k][2]['product_id']
+								self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiaux'})
+					except:
+						print("aucune modification materiaux_line")
+					try:
+						for k in range(0,len(vals['order_line'][i][2]['materiel_line'])):
+							print vals['order_line'][i][2]['materiel_line'][k][2]
+							if vals['order_line'][i][2]['materiel_line'][k][2] != False:
+								ml= vals['order_line'][i][2]['materiel_line'][k][2]['product_id']
+								self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiel'})
+					except:
+						print("aucune modification materiel_line")
+					try:
+						for k in range(0,len(vals['order_line'][i][2]['mo_line'])):
+							print vals['order_line'][i][2]['mo_line'][k][2]
+							if vals['order_line'][i][2]['mo_line'][k][2] != False:
+								mo = vals['order_line'][i][2]['mo_line'][k][2]['product_id'] 
+								self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
+					except:
+						print "aucune modification mo_line"
+		return super(Bde, self).write(cr, uid,ids, vals, context)
+
+	# @api.model
+	# def write(self, vals, context=None): 
+	# 	print 'modify'
+	# 	print vals
+	# 	return super(Bde,self).write(vals)
 
 
 	@api.onchange('avantmetre')
@@ -303,10 +389,19 @@ class Bde(models.Model):
 		self.order_line = result
 
 
-	def button_dummy(self, cr, uid, ids, context=None):
-		print "DUMMY BUTTON"
-		print self
-		return True
+
+	@api.one
+	def button_dummy(self, vals):
+		res = super(Bde, self).button_dummy()
+		print "button_dummy vals"
+		print vals
+		if(self.coeff.coeff):
+			for record in self:
+				for line in record.order_line:
+					print "BUTTON DUMMY"
+					line.price_unit = line.prix_debourse * self.coeff.coeff
+					print line.price_unit
+		return res
 
 
 class GentSaleOrderLine(models.Model):
@@ -553,3 +648,19 @@ class Coeff(models.Model):
 	def _compute_coeff(self):
 		for record in self:
 			record.coeff = ( (1 + (record.frais_1/100) ) *(1 + (record.frais_2/100) ) ) / (1 - (record.frais_3*(1+(record.tva/100))))
+
+
+class GentSaleLayout(models.Model):
+	_inherit="sale_layout.category"
+
+class GencInvoice(models.Model):
+	_inherit="account.invoice"
+
+class GencInvoiceLine(models.Model):
+	_inherit="account.invoice.line"
+
+class GentStockMove(models.Model):
+	_inherit="stock.move"
+
+class GentStockPicking(models.Model):
+	_inherit="stock.picking"
