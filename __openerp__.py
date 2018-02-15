@@ -35,7 +35,8 @@
         'views/coeff.xml',
         'views/ouvrage_elementaire.xml',
         'views/bde.xml',
-        'views/devis.xml'
+        'views/devis.xml',
+        # 'views/ouvrage_elementaire_data.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

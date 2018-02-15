@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        <record id="ouvrage_elementaire_data" model="ir.ui.view">
+            <!-- <field name="parent_id" ref="gent.ouvrage.elementaire_all"/> -->
+        </record>
+
+        <record id="ouvrage_elementaire_data_9" model="ir.ui.view">
+            <field name="product_id">ouvrage elementaire a verifier</field>
+        </record>
+        
+    </data>
+</openerp>
