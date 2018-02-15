@@ -86,7 +86,6 @@ class Bde(models.Model):
 	
 
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
-
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
@@ -244,12 +243,73 @@ class Bde(models.Model):
 			record.currency_id = self.env.ref('base.main_company').currency_id
 
 
-			
+	# def create(self, cr, uid, values, context=None):
+	# 	if values.get('order_id') and values.get('product_id') and  any(f not in values for f in ['name', 'price_unit', 'product_uom_qty', 'product_uom']):
+	# 		order = self.pool['sale.order'].read(cr, uid, values['order_id'], ['pricelist_id', 'partner_id', 'date_order', 'fiscal_position'], context=context)
+	# 		defaults = self.product_id_change(cr, uid, [], order['pricelist_id'][0], values['product_id'],
+	# 			qty=float(values.get('product_uom_qty', False)),
+	# 			uom=values.get('product_uom', False),
+	# 			qty_uos=float(values.get('product_uos_qty', False)),
+	# 			uos=values.get('product_uos', False),
+	# 			name=values.get('name', False),
+	# 			partner_id=order['partner_id'][0],
+	# 			date_order=order['date_order'],
+	# 			fiscal_position=order['fiscal_position'][0] if order['fiscal_position'] else False,
+	# 			flag=False,  # Force name update
+	# 			context=dict(context or {}, company_id=values.get('company_id'))
+ #            )['value']
+	# 		if defaults.get('tax_id'):
+	# 			defaults['tax_id'] = [[6, 0, defaults['tax_id']]]
+	# 		values = dict(defaults, **values)
 
+	# 	if(!self.pool['gent.ouvrage.elementaire'].search([('product_id', '=', values.get('product_id'))])):
+	# 		self.pool['gent.ouvrage.elementaire'].create({
+	# 			'product_id': values.get('product_id'),
 
+	# 			})
 
+	# 	return super(sale_order_line, self).create(cr, uid, values, context=context)
+	# @api.model
+	# def create(self,vals, context=None):
+	# 	print "BDE a Voir"
+	# 	if context is None:
+	# 		context = {}
+	# 	if vals.get('name', '/') == '/':
+	# 		vals['name'] = self.pool.get('ir.sequence').get(self.env.cr, self.env.uid, 'sale.order', context=context) or '/'
+	# 	if vals.get('partner_id') and any(f not in vals for f in ['partner_invoice_id', 'partner_shipping_id', 'pricelist_id', 'fiscal_position']):
+	# 		defaults = self.onchange_partner_id(self.env.cr, self.env.uid, [], vals['partner_id'], context=context)['value']
+	# 		if not vals.get('fiscal_position') and vals.get('partner_shipping_id'):
+	# 			delivery_onchange = self.onchange_delivery_id(self.env.cr, self.env.uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
+	# 			defaults.update(delivery_onchange['value'])
+	# 		vals = dict(defaults, **vals)
+	# 	ctx = dict(context or {}, mail_create_nolog=True)
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['materiaux_line']:
+	# 			print "ITO NY I[2]"
+	# 			print i[2]
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['materiel_line']:
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	try:
+	# 		for i in vals['order_line'][0][2]['mo_line']:
+	# 			if(i[2]['product_id']):
+	# 				j=i[2]['product_id']
+	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
+	# 	except KeyError:
+	# 		print "Erreur d'index"
+	# 	new_id = super(Bde, self).create(vals, context=ctx)
+	# 	self.message_post(self.env.cr, self.env.uid, [new_id], body=_("Quotation created"), context=ctx)
+	# 	return {new_id,super(Bde,self).create(vals)}
 
-	
 
 	def create(self, cr, uid, vals, context=None):
 		print "BDE a Voir"
@@ -265,40 +325,36 @@ class Bde(models.Model):
 				defaults.update(delivery_onchange['value'])
 			vals = dict(defaults, **vals)
 		ctx = dict(context or {}, mail_create_nolog=True)
-		
 		try:
 			for k in range(0,len(vals['order_line'])):
-				print (vals['order_line'][k])
+				# print (vals['order_line'][k])
 				try:
 					for i in range (0,len(vals['order_line'][k][2]['materiel_line'])):
-						print (vals['order_line'][k][2]['materiel_line'][i][2]['product_id'])
-						mll=vals['order_line'][k][2]['materiel_line'][i][2]['product_id']
-						self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiel'})
+						if(len(vals['order_line'][k][2]['materiel_line'][i][2])!=0):
+						# print (vals['order_line'][k][2]['materiel_line'][i][2]['product_id'])
+							mll=vals['order_line'][k][2]['materiel_line'][i][2]['product_id']
+							self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiel'})
 				except:
 					print ("no materiel line")
 				try:
 					for i in range (0,len(vals['order_line'][k][2]['materiaux_line'])):
-						print (vals['order_line'][k][2]['materiaux_line'][i][2]['product_id'])
-						ml=vals['order_line'][k][2]['materiaux_line'][i][2]['product_id']
-						self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiaux'})
+						if(len(vals['order_line'][k][2]['materiaux_line'][i][2])!=0):
+						# print (vals['order_line'][k][2]['materiaux_line'][i][2]['product_id'])
+							ml=vals['order_line'][k][2]['materiaux_line'][i][2]['product_id']
+							self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiaux'})
 				except:
 					print ("no materiaux line")
 				try:
 					for i in range (0,len(vals['order_line'][0][2]['mo_line'])):
-						print (vals['order_line'][k][2]['mo_line'][i][2]['product_id'])
-						mo=vals['order_line'][k][2]['mo_line'][i][2]['product_id']
-						self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
+						if(len(vals['order_line'][k][2]['mo_line'][i][2])!=0):
+						# print (vals['order_line'][k][2]['mo_line'][i][2]['product_id'])
+							mo=vals['order_line'][k][2]['mo_line'][i][2]['product_id']
+							self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
 				except:
 					print ("no mo line")
 		except:
 			print ("no")
-
 		new_id = super(Bde, self).create(cr, uid, vals, context=ctx)
-
-		
-
-
-
 
 		self.message_post(cr, uid, [new_id], body=_("Quotation created"), context=ctx)
 
@@ -310,7 +366,6 @@ class Bde(models.Model):
 		print "Modifier"
 		# self.button_dummy(cr,uid, ids,vals)
 		print vals
-
 		if('coeff' in vals):
 			coeff = self.pool.get('gent.coeff').browse(cr,uid,[vals["coeff"]]).coeff
 			order_line = self.pool.get("sale.order").browse(cr,uid,ids)
@@ -351,12 +406,6 @@ class Bde(models.Model):
 					except:
 						print "aucune modification mo_line"
 		return super(Bde, self).write(cr, uid,ids, vals, context)
-
-	# @api.model
-	# def write(self, vals, context=None): 
-	# 	print 'modify'
-	# 	print vals
-	# 	return super(Bde,self).write(vals)
 
 
 	@api.onchange('avantmetre')

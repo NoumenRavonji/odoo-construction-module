@@ -51,7 +51,7 @@
                                     <field name="product_qty" string="Quantité d'article"/>
                                     <field name="product_uom" string="Unité de mesure" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
                                     <!-- <field name="product_rounding"/> -->
-                                    <field name="product_efficiency" string="Rendement" />
+                                    <!-- <field name="product_efficiency" string="Rendement" /> -->
                                   </tree
                                   >
                               </field>
