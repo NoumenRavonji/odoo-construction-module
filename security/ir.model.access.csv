@@ -9,6 +9,10 @@ access_gent_bde_composant,gent.bde.composant,model_gent_bde_composant,group_coor
 access_gent_ouvrage_elementaire,gent.ouvrage.elementaire,model_gent_ouvrage_elementaire,group_coordinateur_travaux,1,1,1,1
 access_gent_coeff,gent.coeff,model_gent_coeff,group_coordinateur_travaux,1,1,1,1
 
+access_gent_product_product,product.product,model_product_product,group_coordinateur_travaux,1,1,1,1
+access_gent_product_uom_user,product.uom.user,model_product_uom,group_coordinateur_travaux,1,1,1,1
+access_gent_product_price_history_employee,prices.history employee,model_product_price_history,group_coordinateur_travaux,1,1,1,1
+
 report_layout_category_1,report_layout_category_1,model_sale_layout_category,group_coordinateur_travaux,1,1,1,1
 
 access_gent_stock_move_manager,stock.move manager,model_stock_move,group_coordinateur_travaux,1,1,1,1

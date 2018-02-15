@@ -325,6 +325,8 @@ class Bde(models.Model):
 				defaults.update(delivery_onchange['value'])
 			vals = dict(defaults, **vals)
 		ctx = dict(context or {}, mail_create_nolog=True)
+
+
 		try:
 			for k in range(0,len(vals['order_line'])):
 				# print (vals['order_line'][k])
@@ -713,3 +715,12 @@ class GentStockMove(models.Model):
 
 class GentStockPicking(models.Model):
 	_inherit="stock.picking"
+
+class GentProductProduct(models.Model):
+	_inherit="product.product"
+
+class GentProductUom(models.Model):
+	_inherit="product.uom"
+
+class GentProductPriceHistory(models.Model):
+	_inherit="product.price.history"
