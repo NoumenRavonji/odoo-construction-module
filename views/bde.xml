@@ -10,6 +10,14 @@
                     <field name="avantmetre" string="Avant-métré"/>
                 </xpath>
 
+                 <xpath expr="//button[@name='action_quotation_send']" position="replace">
+            
+                </xpath>
+
+                 <xpath expr="//button[@name='action_button_confirm']" position="after">
+                     <button name="convert_to_devis" states="draft" string="Convertir en devis"/>
+                </xpath>
+
                 <xpath expr="//field[@name='order_line']" position="replace">
                         <field name="order_line">
                                 <form string="Sales Order Lines">
@@ -17,6 +25,7 @@
                                         <button name="%(sale.action_view_sale_order_line_make_invoice)d" states="confirmed" string="Invoice" type="action" icon="terp-document-new"/>
                                         <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors='{"exception":"red","cancel":"red"}'/>
                                     </header>
+                                   
                                     <group>
                                         <group>
                                             <field name="product_id"

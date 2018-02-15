@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+    	<record id="uom_1" model="product.product_uom_unit">
+            <field name="product_id">Mice</field>
+            <field name="gent_type">composant_materiaux</field>
+            <field name="standard_price">1700000.0</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="product.product_uom_unit"/>
+            <field name="uom_po_id" ref="product.product_uom_unit"/>
+        </record>
+
+
+    	 <record id="product_product_1" model="product.product">
+            <field name="product_id">Mice</field>
+            <field name="gent_type">composant_materiaux</field>
+            <field name="standard_price">1700000.0</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="product.product_uom_unit"/>
+            <field name="uom_po_id" ref="product.product_uom_unit"/>
+        </record>
+
+    </data>
+ </openerp>
+
+
+ _columns = {
+        'price': fields.function(_product_price, type='float', string='Price', digits_compute=dp.get_precision('Product Price')),
+        'price_extra': fields.function(_get_price_extra, type='float', string='Variant Extra Price', help="This is the sum of the extra price of all attributes", digits_compute=dp.get_precision('Product Price')),
+        'lst_price': fields.function(_product_lst_price, fnct_inv=_set_product_lst_price, type='float', string='Public Price', digits_compute=dp.get_precision('Product Price')),
+        'code': fields.function(_product_code, type='char', string='Internal Reference'),
+        'partner_ref' : fields.function(_product_partner_ref, type='char', string='Customer ref'),
+        'default_code' : fields.char('Internal Reference', select=True),
+        'active': fields.boolean('Active', help="If unchecked, it will allow you to hide the product without removing it."),
+        'product_tmpl_id': fields.many2one('product.template', 'Product Template', required=True, ondelete="cascade", select=True, auto_join=True),
+        'ean13': fields.char('EAN13 Barcode', size=13, help="International Article Number used for product identification."),
+        'name_template': fields.related('product_tmpl_id', 'name', string="Template Name", type='char', store={
+            'product.template': (_get_name_template_ids, ['name'], 10),
+            'product.product': (lambda self, cr, uid, ids, c=None: ids, [], 10),
+        }, select=True),
+        'attribute_value_ids': fields.many2many('product.attribute.value', id1='prod_id', id2='att_id', string='Attributes', readonly=True, ondelete='restrict'),
+        'is_product_variant': fields.function( _is_product_variant_impl, type='boolean', string='Is product variant'),
+
+        # image: all image fields are base64 encoded and PIL-supported
+        'image_variant': fields.binary("Variant Image",
+            help="This field holds the image used as image for the product variant, limited to 1024x1024px."),
+
+        'image': fields.function(_get_image_variant, fnct_inv=_set_image_variant,
+            string="Big-sized image", type="binary",
+            help="Image of the product variant (Big-sized image of product template if false). It is automatically "\
+                 "resized as a 1024x1024px image, with aspect ratio preserved."),
+        'image_small': fields.function(_get_image_variant, fnct_inv=_set_image_variant,
+            string="Small-sized image", type="binary",
+            help="Image of the product variant (Small-sized image of product template if false)."),
+        'image_medium': fields.function(_get_image_variant, fnct_inv=_set_image_variant,
+            string="Medium-sized image", type="binary",
+            help="Image of the product variant (Medium-sized image of product template if false)."),
+    }
+
+    class OuvrageElementaire(models.Model):
+	_name = "gent.ouvrage.elementaire"
+	_rec_name="product_id"
+
+	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True), ('gent_type', '=', 'ouvrage_elementaire')], change_default=True, required=True, ondelete='restrict')
+
+	prix_debourse = fields.Float('Prix déboursé', store=True, compute='_compute_oe_pu')
+
+	mo_line = fields.One2many('gent.bde.composant', 'gent_oe_mo_line_id', "Main d'oeuvre", copy=True)
+	materiel_line = fields.One2many('gent.bde.composant', 'gent_oe_materiel_id', "Matériels", copy=True)
+	materiaux_line = fields.One2many('gent.bde.composant', 'gent_oe_materaux_id', "Matériaux", copy=True)
+	price_unit= fields.Float('Unit Price', store=True, readonly=True)
+	product_uom_qty= fields.Float('Quantity',default=1, digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True)
+	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True)
+
+	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
