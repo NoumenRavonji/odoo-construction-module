@@ -10,12 +10,38 @@
                     <field name="avantmetre" string="Avant-métré"/>
                 </xpath>
 
+                 <xpath expr="//header" position="replace">
+                    <field name="is_bde" invisible="1" />
+                    <header>
+                        <button name="invoice_recreate" states="invoice_except" string="Recreate Invoice" groups="base.group_user"/>
+                        <button name="invoice_corrected"  states="invoice_except" string="Ignore Exception" groups="base.group_user"/>
+                        <button name="action_quotation_send" string="Send by Email" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
+                        <button name="action_quotation_send" string="Send by Email" type="object" states="sent,progress,manual" groups="base.group_user"/>
+                        <button name="print_quotation" string="Print" attrs="{'invisible': [('is_bde', '=', True)]}" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
+                        <button name="print_quotation" string="Print" type="object" states="sent,progress,manual" groups="base.group_user"/>
+                        <button name="action_button_confirm" states="draft" attrs="{'invisible': [('is_bde', '=', True)]}" string="Confirm Sale" type="object" groups="base.group_user"/>
+                        <button name="action_button_confirm" states="sent"  string="Confirm Sale" class="oe_highlight" type="object" groups="base.group_user"/>
+                        <button name="action_view_invoice" string="View Invoice" type="object" class="oe_highlight"
+                            attrs="{'invisible': [('invoice_exists', '=', False)]}" groups="base.group_user"/>
+                        <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice"
+                            type="action" states="manual" class="oe_highlight" groups="base.group_user"/>
+                        <button name="copy_quotation" states="cancel" string="New Copy of Quotation" type="object"/>
+                        <button name="cancel" states="draft,sent" string="Cancel Quotation" groups="base.group_user" attrs="{'invisible': [('is_bde', '=', True)]}" />
+                        <button name="action_cancel" states="manual,progress"   string="Cancel Order" type="object" groups="base.group_user"/>
+                        <button name="invoice_cancel" states="invoice_except"  string="Cancel Order" groups="base.group_user"/>
+                        <field name="state" widget="statusbar"  attrs="{'invisible': [('is_bde', '=', 0)]}" statusbar_visible="draft,sent,progress,done" statusbar_colors='{"invoice_except":"red","waiting_date":"blue"}'  />
+                </header>
+                </xpath>
+
+
+
                  <xpath expr="//button[@name='action_quotation_send']" position="replace">
             
                 </xpath>
 
+
                  <xpath expr="//button[@name='action_button_confirm']" position="after">
-                     <button name="convert_to_devis" states="draft" string="Convertir en devis"/>
+                     <button name="convert_to_devis" states="draft"  attrs="{'invisible': [('is_bde', '=', False)]}" string="Convertir en devis" type="object"/>
                 </xpath>
 
                 <xpath expr="//field[@name='order_line']" position="replace">
@@ -140,16 +166,32 @@
                 </xpath> 
 
                 <xpath expr="//field[@name='partner_id']" position="replace">
-                    <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}' style="color:green"/>
+                    <field name="partner_id" on_change="onchange_partner_id(partner_id, context)" domain="[('customer','=',True)]" options='{"always_reload": True}' readonly="False" style="color:green"/>
                 </xpath>
 
                 <xpath expr="//group[@name='sale_total']" position="after">
                     <group>
-                        <field name="coeff"  groups="base.group_user"/>
+                        <field name="coeff"  groups="base.group_user" invisible="context.get('is_bde', False)"/>
                     </group>
                 </xpath>
             </field>
         </record>
+
+       <!--  <record model="ir.ui.view" id="bde_search_view">
+            <field name="name">sale.order.list.select.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="arch" type="xml">
+                <search string="Search Sales Order">
+
+ 
+
+                    <filter name="bde_filter" string="BDE"
+                            domain="[('state', '=', 'bde')]"/>
+
+               </search>
+                
+            </field>
+        </record> -->
 
 
         
@@ -158,18 +200,34 @@
 			<field name="name">BDE</field>
 			<field name="res_model">sale.order</field>
 			<field name="view_type">form</field>
-			<field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form</field>
+			<field name="domain">[('is_bde','=','1')]</field>
 			<field name="help" type="html">
                 <p class="oe_view_nocontent_create">Créer un BDE (Bordereau Détail Estimatif)
                 </p>
             </field>
 		</record>
+
+        <record id="devis_list_action" model="ir.actions.act_window">
+            <field name="name">Devis</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('is_bde','=',False)]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un devis
+                </p>
+            </field>
+        </record>
         
 
 
 
     	<menuitem id="bde_menu" name="BDE" parent="gent_devis_menu"
                   action="bde_list_action" sequence="2"/>
+
+        <menuitem id="devis_menu" name="Devis" parent="gent_devis_menu"
+                  action="devis_list_action" sequence="2"/>
 
     </data>
 </openerp>

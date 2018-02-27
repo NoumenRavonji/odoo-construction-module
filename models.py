@@ -1,6 +1,7 @@
 
 # -*- coding: utf-8 -*-
-
+import openpyxl
+from tempfile import TemporaryFile
 from openerp import models, fields, api
 from openerp.api import Environment as env
 import openerp.addons.decimal_precision as dp
@@ -87,113 +88,34 @@ class Bde(models.Model):
 
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
-
+	is_bde = fields.Boolean("BDE", default=True)
+	# state= fields.Selection([
+	# 		('bde', 'BDE'),
+ #            ('draft', 'Draft Quotation'),
+ #            ('sent', 'Quotation Sent'),
+ #            ('cancel', 'Cancelled'),
+ #            ('waiting_date', 'Waiting Schedule'),
+ #            ('progress', 'Sales Order'),
+ #            ('manual', 'Sale to Invoice'),
+ #            ('shipping_except', 'Shipping Exception'),
+ #            ('invoice_except', 'Invoice Exception'),
+ #            ('done', 'Done'),
+ #            ], string='Status', readonly=True, copy=False, help="Gives the status of the quotation or sales order.\
+ #              \nThe exception status is automatically set when a cancel operation occurs \
+ #              in the invoice validation (Invoice Exception) or in the picking list process (Shipping Exception).\nThe 'Waiting Schedule' status is set when the invoice is confirmed\
+ #               but waiting for the scheduler to run on the order date.", select=True, default="bde")
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
 		value = {
             'currency_id': self.pool.get('product.pricelist').browse(cr, uid, pricelist_id, context=context).currency_id.id
 		}
 		return { 'value': value}
 
+	@api.multi
+	def convert_to_devis(self):
+		self.is_bde= False
+		return True
 
-	# @api.onchange('coeff')
-	# def on_change_coeff(self):
-		
-	# 	if(self.coeff.coeff):
-	# 		for line in self.order_line:			
-	# 			print "CHANGE LINE COEFF"
-	# 			print self.coeff.coeff
-	# 			print line.prix_debourse
-	# 			print line.prix_debourse * self.coeff.coeff
-	# 			materiaux_line = []
-	# 			if(line.materiaux_line):
-	# 				for line2 in line.materiaux_line:
-	# 					materiaux_line.append((0,False, {
-	# 							'product_id': line2.product_id.id,
-	# 							'product_uom_qty': line2.product_uom_qty,
-	# 							'product_uom': line2.product_uom.id,
-	# 							'price_unit': line2.price_unit,
-	# 							'price_subtotal': line2.price_subtotal
-	# 							}))
-	# 			line.price_unit= line.prix_debourse * self.coeff.coeff
-	# 			order_line.append((1, line.id,{
-	# 				'product_id': line.product_id.id,
-	# 				'product_uom': line.product_uom.id,
-	# 				'product_uom_qty': line.product_uom_qty,
-	# 				'price_unit': line.price_unit,
-	# 				'prix_debourse': line.prix_debourse,
-	# 				'price_subtotal': line.price_subtotal,
-	# 				'materiaux_line': materiaux_line,
-	# 				'ouvrage_elementaire': line.ouvrage_elementaire.id
-	# 				}))
-	# 	return {'value':{'order_line': order_line}}
-					
-
-
-
-	# @api.onchange('coeff')
-	# def on_change_coeff(self):
-	# 	for record in self:
-	# 		for line in record.order_line:
-	# 			print "CHANGE coef"
-	# 			print line
-	# 			print line.prix_debourse
-	# 			print line.price_unit
-	# 			if(self.coeff.coeff):
-	# 				print "COEFF HERE"
-	# 				print line.id
-	# 				print self.coeff.coeff
-	# 				print line.prix_debourse
-	# 				print line.prix_debourse * self.coeff.coeff
-	# 				line.price_unit = line.prix_debourse * self.coeff.coeff
-	# 				mo_line = []
-	# 				materiaux_line = []
-	# 				materiel_line = []
-	# 				if(line.mo_line):
-	# 					for line2 in line.mo_line:
-	# 						mo_line.append([0,0,{
-	# 							'product_id': line2.product_id,
-	# 							'price_unit': line2.price_unit,
-	# 							'price_subtotal': line2.price_subtotal,
-	# 							'product_uom_qty': line2.product_uom_qty,
-	# 							'product_uom': line2.product_uom.id,
-	# 							'gent_mo_order_line_id': line.id
-	# 							}])
-	# 				if(line.materiaux_line):
-	# 					for line2 in line.materiaux_line:
-	# 						materiaux_line.append([0,0,{
-	# 							'product_id': line2.product_id.id,
-	# 							'price_unit': line2.price_unit,
-	# 							'price_subtotal': line2.price_subtotal,
-	# 							'product_uom_qty': line2.product_uom_qty,
-	# 							'product_uom': line2.product_uom.id,
-	# 							'gent_materiaux_order_line_id': line.id
-	# 							}])
-	# 				if(line.materiel_line):
-	# 					for line2 in line.materiel_line:
-	# 						materiel_line.append([0,0,{
-	# 							'product_id': line2.product_id.id,
-	# 							'price_unit': line2.price_unit,
-	# 							'price_subtotal': line2.price_subtotal,
-	# 							'product_uom_qty': line2.product_uom_qty,
-	# 							'product_uom': line2.product_uom.id,
-	# 							'gent_materiel_order_line_id': line.id
-	# 							}])
-	# 				line.write( {
-	# 					'price_unit': line.prix_debourse * self.coeff.coeff,
-	# 					'ouvrage_elementaire': line.ouvrage_elementaire.id,
-	# 					'prix_debourse' : line.prix_debourse,
-	# 					"price_subtotal": line.price_subtotal,
-	# 					'product_id': line.product_id.id,
-	# 					'mo_line': mo_line,
-	# 					'materiel_line': materiel_line,
-	# 					'materiaux_line': materiaux_line
-	# 					})
-	# 				print line.price_unit
-	# 			else:
-	# 				# line.update({
-	# 				# 	'price_unit': line.prix_debourse
-	# 				# 	})
-	# 				line.price_unit = line.prix_debourse
+	
 	
 	@api.one
 	@api.onchange('order_line')
@@ -216,106 +138,24 @@ class Bde(models.Model):
 					print "MATERIAUX LINE MODIF"
 					print line2.product_id
 					somme_materiaux += line2.price_subtotal
-			
-				# line.write({
-				# 	'prix_debourse': somme_mo + somme_materiel + somme_materiaux,
-				# 	'price_unit': somme_mo + somme_materiel + somme_materiaux
-				# 	})
-
-
-				# if(self.coeff.coeff):
-				# 	print "COEFF HERE"
-				# 	print line.id
-				# 	print self.coeff.coeff
-				# 	print line.prix_debourse
-				# 	print line.prix_debourse * self.coeff.coeff
-				# 	line.write({
-				# 		'prix_debourse': line.price_unit,
-				# 		'price_unit': line.prix_debourse * self.coeff.coeff
-				# 		})
-				# else:
-				# 	print "NOT COEFF"
-				# 	print line.prix_debourse
-				# 	line.write({
-				# 		'price_unit': line.prix_debourse
-				# 		})
 
 			record.currency_id = self.env.ref('base.main_company').currency_id
 
 
-	# def create(self, cr, uid, values, context=None):
-	# 	if values.get('order_id') and values.get('product_id') and  any(f not in values for f in ['name', 'price_unit', 'product_uom_qty', 'product_uom']):
-	# 		order = self.pool['sale.order'].read(cr, uid, values['order_id'], ['pricelist_id', 'partner_id', 'date_order', 'fiscal_position'], context=context)
-	# 		defaults = self.product_id_change(cr, uid, [], order['pricelist_id'][0], values['product_id'],
-	# 			qty=float(values.get('product_uom_qty', False)),
-	# 			uom=values.get('product_uom', False),
-	# 			qty_uos=float(values.get('product_uos_qty', False)),
-	# 			uos=values.get('product_uos', False),
-	# 			name=values.get('name', False),
-	# 			partner_id=order['partner_id'][0],
-	# 			date_order=order['date_order'],
-	# 			fiscal_position=order['fiscal_position'][0] if order['fiscal_position'] else False,
-	# 			flag=False,  # Force name update
-	# 			context=dict(context or {}, company_id=values.get('company_id'))
- #            )['value']
-	# 		if defaults.get('tax_id'):
-	# 			defaults['tax_id'] = [[6, 0, defaults['tax_id']]]
-	# 		values = dict(defaults, **values)
-
-	# 	if(!self.pool['gent.ouvrage.elementaire'].search([('product_id', '=', values.get('product_id'))])):
-	# 		self.pool['gent.ouvrage.elementaire'].create({
-	# 			'product_id': values.get('product_id'),
-
-	# 			})
-
-	# 	return super(sale_order_line, self).create(cr, uid, values, context=context)
-	# @api.model
-	# def create(self,vals, context=None):
-	# 	print "BDE a Voir"
-	# 	if context is None:
-	# 		context = {}
-	# 	if vals.get('name', '/') == '/':
-	# 		vals['name'] = self.pool.get('ir.sequence').get(self.env.cr, self.env.uid, 'sale.order', context=context) or '/'
-	# 	if vals.get('partner_id') and any(f not in vals for f in ['partner_invoice_id', 'partner_shipping_id', 'pricelist_id', 'fiscal_position']):
-	# 		defaults = self.onchange_partner_id(self.env.cr, self.env.uid, [], vals['partner_id'], context=context)['value']
-	# 		if not vals.get('fiscal_position') and vals.get('partner_shipping_id'):
-	# 			delivery_onchange = self.onchange_delivery_id(self.env.cr, self.env.uid, [], vals.get('company_id'), None, vals['partner_id'], vals.get('partner_shipping_id'), context=context)
-	# 			defaults.update(delivery_onchange['value'])
-	# 		vals = dict(defaults, **vals)
-	# 	ctx = dict(context or {}, mail_create_nolog=True)
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['materiaux_line']:
-	# 			print "ITO NY I[2]"
-	# 			print i[2]
-	# 			if(i[2]['product_id']):
-	# 				j=i[2]['product_id']
-	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiaux'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['materiel_line']:
-	# 			if(i[2]['product_id']):
-	# 				j=i[2]['product_id']
-	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_materiel'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	try:
-	# 		for i in vals['order_line'][0][2]['mo_line']:
-	# 			if(i[2]['product_id']):
-	# 				j=i[2]['product_id']
-	# 				self.env['product.template'].browse([j]).write({'gent_type': 'composant_main_d_oeuvre'})
-	# 	except KeyError:
-	# 		print "Erreur d'index"
-	# 	new_id = super(Bde, self).create(vals, context=ctx)
-	# 	self.message_post(self.env.cr, self.env.uid, [new_id], body=_("Quotation created"), context=ctx)
-	# 	return {new_id,super(Bde,self).create(vals)}
 
 
 	def create(self, cr, uid, vals, context=None):
 		print "BDE a Voir"
-		# print vals
+		print vals
 		if context is None:
 			context = {}
+		# if vals.get('partner_id'):
+		# 	print vals.get('partner_id')
+		# else:
+		# 	print self.pool.get('gent.avantmetre').browse(cr, uid,[vals['avantmetre']])
+		# 	vals['partner_id'] = self.pool.get('gent.avantmetre').browse(cr, uid,[vals['avantmetre']]).partner_id.id
+		# print "partner id"
+		# print vals.get('partner_id')
 		if vals.get('name', '/') == '/':
 			vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'sale.order', context=context) or '/'
 		if vals.get('partner_id') and any(f not in vals for f in ['partner_invoice_id', 'partner_shipping_id', 'pricelist_id', 'fiscal_position']):
@@ -622,6 +462,8 @@ class OuvrageElementaire(models.Model):
 
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
 
+	excel_file = fields.Binary(string='Excel File')
+
 	@api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
 	def _compute_oe_pu(self):
@@ -652,6 +494,28 @@ class OuvrageElementaire(models.Model):
 	def _compute_order_line_montant(self):
 		for record in self:
 			record.price_subtotal= record.price_unit * record.product_uom_qty
+
+	@api.multi
+	def import_excel(self):
+		print "IMPORT EXCEL"
+		# Generating of the excel file to be read by openpyxl
+		my_file = self.excel_file.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+
+		# Create workbook
+		workbook = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		sheet = workbook[workbook.get_sheet_names()[0]]
+
+		print "DISPLAYING EXCEL"
+		# Iteration on each rows in excel
+		for row in sheet.rows:
+			for col in row:
+				print col.value
+		return True
+
 
 
 
