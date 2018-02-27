@@ -653,10 +653,15 @@ class OuvrageElementaire(models.Model):
 				cle='MO'
 				continue
 			if(row[0].value==None):
-				continue	
+				if(row[3].value==None):
+					continue	
+				else:
+					row[0].value=cle+'-'+d['nom_section']
 			if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
 				cle=str()
 				continue
+			if(row[1].value==None):
+				row[1].value='u'
 			# if(row[1].value==None):
 			# 	continue
 			try:
