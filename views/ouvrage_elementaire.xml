@@ -1,36 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
-
-    	
-
     	<record id="gent_ouvrage_elementaire_form" model="ir.ui.view">
 			<field name="name">gent.ouvrage.elementaire.form</field>
 			<field name="model">gent.ouvrage.elementaire</field>
-
 			<field name="arch" type="xml">
 				<form string="Ouvrage élémentaire">
-                                 
                                     <group>
-                                            <field name="product_id"
-                                                
-                                               
-                                                domain="[('gent_type', '=', 'ouvrage_elementaire')]"  />
-                                  
-                                           
-                                           
+								<!-- <field name="excel_file"/>
+								<button name="import_excel" type="object" string="Importer"/> -->
+                                            <field name="product_id" domain="[('gent_type', '=', 'ouvrage_elementaire')]"  />
                                             <field name="product_uom_qty" invisible="1"/>
                                             <field name="product_uom" />
                                             <field name="price_unit" invisible="1"/>
                                             <field name="prix_debourse" />
-                                         
-                              
-
                                     </group>
 
-
-                         
-                     
                                     <label for="materiaux_line"/>
 				                    <field name="materiaux_line" widget="one2many_list" >
 				                          <tree string="Détails Main d'oeuvre" editable="bottom">
@@ -71,7 +56,7 @@
                         				</field> 
                         
                                 </form>
-
+            
 			</field>
 		</record>
 
@@ -80,7 +65,7 @@
             <field name="res_model">gent.ouvrage.elementaire</field>
             <field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-
+			<field name="view_id" ref="gent_ouvrage_elementaire_form"/>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">Créer un ouvrage élémentaire
                 </p>

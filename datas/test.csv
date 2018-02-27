@@ -1,0 +1,48 @@
+;;;;
+;;;;
+N° DE PRIX: 001;- INSTALLATION, BARAQUEMENT ET REPLI DE CHANTIER;;;
+;;;;
+DESIGNATION;UNITE;QUANTITE;PRIX UNITAIRE;MONTANT
+MATERIAUX;;;;
+Baraque de chantier 12mx4m;;;;0
+Tole;u ;1,00;1 700 000,00;1 700 000
+Loyer;u;3,00;120 000,00;360 000
+Accessoires;Fft;1,00;350 000,00;350 000
+Laboratoire;;;;0
+Formulation;Fft;1,00;1 900 000,00;1 900 000
+Convenance;Fft;1,00;800 000,00;800 000
+;;;;0
+EPI;;;;0
+Combinaison;u;15,00;24 000,00;360 000
+Casque;u;15,00;22 000,00;330 000
+Gilet;u;15,00;6 500,00;97 500
+Lunette;u;15,00;13 000,00;195 000
+Rebalise;u;5,00;12 000,00;60 000
+Chaussure;u;15,00;76 000,00;1 140 000
+Gant;u;75,00;5 400,00;405 000
+Cache poussière;u;5,00;15 000,00;75 000
+Bouchon d'oreille;u;15,00;1 500,00;22 500
+Cloture;ml;40,00;24 500,00;980 000
+;;;;0
+TOTAL MATERIAUX;;;;8 775 000,00
+MATERIELS;;;;
+Brouette;u;5,00;50 000,00;250 000,00
+Fut;u;2,00;45 000,00;90 000,00
+Sceau;u;20,00;2 000,00;40 000,00
+Pelle;u;10,00;10 000,00;100 000,00
+Angady;u;10,00;10 000,00;100 000,00
+Gasoil;l;100,00;3 300,00;330 000,00
+Transport pesonels;u;30,00;60 000,00;1 800 000,00
+Transport;u;4,00;1 000 000,00;4 000 000,00
+TOTAL MATERIELS;;;;6 710 000,00
+MAIN D'ŒUVRE;;;;
+Maçon;H/J;20,00;13 000,00;260 000,00
+Ferailleur;H/J;;;0,00
+Charpentier;H/J;;;0,00
+Peintre;H/J;;;0,00
+Electricien;H/J;;;0,00
+Soudeur;H/J;;;0,00
+Manœuvre;H/J;20,00;8 500,00;170 000,00
+TOTAL MAIN D'ŒUVRE;;;;430 000,00
+Coeficient K=;1,200;DEBOURSE DE P.U;;15 915 000,00
+Rendement R=;Err :520;PRIX UNITAIRE;;Err :520
