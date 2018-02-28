@@ -6,7 +6,11 @@ from openerp import models, fields, api
 from openerp.api import Environment as env
 import openerp.addons.decimal_precision as dp
 from openerp.tools.translate import _
-
+from xlrd import open_workbook
+import base64
+from tempfile import TemporaryFile
+import openpyxl
+from openpyxl.utils import coordinate_from_string, column_index_from_string
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -140,8 +144,6 @@ class Bde(models.Model):
 					somme_materiaux += line2.price_subtotal
 
 			record.currency_id = self.env.ref('base.main_company').currency_id
-
-
 
 
 	def create(self, cr, uid, vals, context=None):
@@ -445,6 +447,169 @@ class BdeLine(models.Model):
 		for record in self:
 			record.price_subtotal = record.price_unit * record.product_uom_qty
 
+
+class OuvrageElementaire(models.Model):
+	_name = "gent.ouvrage.elementaire.import"
+	excel_file = fields.Binary(string='Excel File')
+
+	@api.multi
+	def import_excel(self):
+		print "IMPORT EXCEL"
+		# Generating of the excel file to be read by openpyxl
+		my_file = self.excel_file.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+
+		print "DISPLAYING EXCEL"
+		a=list()
+		d=dict()
+		c=0
+		cle=str()
+		for row in ws:
+			if(row[0].value=="N DE PRIX:001"):
+				d={}
+				cle=str()
+				d['nom_section']=row[1].value
+				d['MATERIAUX']=list()
+				d['MATERIELS']=list()
+				d['MO']=list()
+			if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
+				continue
+			if(row[0].value=="MATERIAUX"):
+				cle='MATERIAUX'
+				continue
+			if(row[0].value=="MATERIELS"):
+				cle='MATERIELS'
+				continue
+			if(row[0].value=="MAIN D'OEUVRE"):
+				cle='MO'
+				continue
+			if(row[0].value==None):
+				continue	
+			if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
+				cle=str()
+				continue
+			# if(row[1].value==None):
+			# 	continue
+			try:
+				d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
+			except KeyError:
+				pass
+			
+			# Insertion de la section dans la liste
+			if(d in a):
+				continue
+			else:
+				a.append(d)
+			# print d['nom_section']
+
+		for ouvrage in a:
+			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
+				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
+			else:
+				self.env['product.template'].create({'name':ouvrage['nom_section'],'gent_type':'ouvrage_elementaire'})
+			id_ouv = self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
+			if (self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])):
+				print "ouvrage elementaire existant"
+			else:
+				self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1})
+			id_line = self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])
+			print ouvrage['nom_section'], ":",id_line.id
+
+			for materiaux in ouvrage['MATERIAUX']:
+				print "MATERIAUX ",materiaux['Designation']
+				if materiaux['Unite'] == 'u':
+					materiaux['Unite']='Unité(s)'
+				elif materiaux['Unite'] == 'l':
+					materiaux['Unite']='Litre(s)'
+				elif materiaux['Unite'] == 'Fft':
+					materiaux['Unite'] = 'fft'
+				elif materiaux['Unite'] == None:
+					continue
+				if(self.env['product.uom'].search([['name','=',materiaux['Unite']]])):
+					id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+					print id_unit_mo
+				else:
+					print "unite qui n'existe pas encore"
+					self.env['product.uom'].create({'name':materiaux['Unite'],'category_id':1})
+				if(self.env['product.product'].search([['name','=',materiaux['Designation']]])):
+					print "Le produit existe deja"
+				else:
+					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux'})
+				id_mo = self.env['product.product'].search([('name','=',materiaux['Designation'])]).id
+				print id_mo
+				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+				print "ID_LINE : ",id_line.id
+				
+				if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',materiaux['Prix Unitaire']],['product_uom_qty','=',materiaux['Quantite']],['gent_oe_materaux_id','=',id_line.id]])):
+					print "BDE_composant existant"
+				else:
+					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiaux['Prix Unitaire'],'product_uom_qty':materiaux['Quantite'],'gent_oe_materaux_id':id_line.id})
+			for materiel in ouvrage['MATERIELS']:
+
+				if materiel['Unite'] == 'u':
+					materiel['Unite']='Unité(s)'
+				elif materiel['Unite'] == 'l':
+					materiel['Unite']='Litre(s)'
+				elif materiel['Unite'] == 'Fft':
+					materiel['Unite'] = 'fft'
+				elif materiel['Unite'] == None:
+					continue
+				if(self.env['product.uom'].search([['name','=',materiel['Unite']]])):
+					id_unit_mo = self.env['product.uom'].search([('name','=',materiel['Unite'])]).id
+					print id_unit_mo
+				else:
+					print "unite qui n'existe pas encore"
+					self.env['product.uom'].create({'name':materiel['Unite'],'category_id':1})
+				if(self.env['product.product'].search([['name','=',materiel['Designation']]])):
+					print "Le produit existe deja"
+				else:
+					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel'})
+				id_mo = self.env['product.product'].search([('name','=',materiel['Designation'])]).id
+				print id_mo
+				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+				print "ID_LINE : ",id_line.id
+				
+				if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',materiel['Prix Unitaire']],['product_uom_qty','=',materiel['Quantite']],['gent_oe_materiel_id','=',id_line.id]])):
+					print "BDE_composant existant"
+				else:
+					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiel['Prix Unitaire'],'product_uom_qty':materiel['Quantite'],'gent_oe_materiel_id':id_line.id})
+			for mo in ouvrage['MO']:
+				print "MO ",mo['Designation']
+				if mo['Unite'] in ['','u','u ']:
+					mo['Unite']='Unité(s)'
+				elif mo['Unite'] == 'l':
+					mo['Unite']='Litre(s)'
+				elif mo['Unite'] == 'Fft':
+					mo['Unite'] = 'fft'
+				elif mo['Unite'] == None:
+					continue
+				if(self.env['product.uom'].search([['name','=',mo['Unite']]])):
+					id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
+					print id_unit_mo
+				else:
+					print "unite qui n'existe pas encore"
+					self.env['product.uom'].create({'name':mo['Unite'],'category_id':1})
+				if(self.env['product.product'].search([['name','=',mo['Designation']]])):
+					print "Le produit existe deja"
+				else:
+					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre'})
+				id_mo = self.env['product.product'].search([('name','=',mo['Designation'])]).id
+				print id_mo
+				id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
+				print "ID_LINE : ",id_line.id
+				print "HELLO"
+				if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',mo['Prix Unitaire']],['product_uom_qty','=',mo['Quantite']],['gent_oe_mo_line_id','=',id_line.id]])):
+					print "BDE_composant existant"
+				else:
+					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':mo['Prix Unitaire'],'product_uom_qty':mo['Quantite'],'gent_oe_mo_line_id':id_line.id})
+	
 class OuvrageElementaire(models.Model):
 	_name = "gent.ouvrage.elementaire"
 	_rec_name="product_id"
@@ -461,6 +626,63 @@ class OuvrageElementaire(models.Model):
 	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True)
 
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
+	
+
+	# @api.multi
+	# def import_excel(self):
+	# 	print "IMPORT EXCEL"
+	# 	# Generating of the excel file to be read by openpyxl
+	# 	my_file = self.excel_file.decode('base64')
+	# 	excel_fileobj = TemporaryFile('wb+')
+	# 	excel_fileobj.write(my_file)
+	# 	excel_fileobj.seek(0)
+
+	# 	# Create workbook
+	# 	wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+	# 	# Get the first sheet of excel file
+	# 	ws = wb[wb.get_sheet_names()[0]]
+
+	# 	print "DISPLAYING EXCEL"
+	# 	# Iteration on each rows in excel
+	# 	a=list()
+	# 	d=dict()
+	# 	c=0
+	# 	cle=str()
+	# 	for row in ws:
+	# 		if(row[0].value=="N DE PRIX:001"):
+	# 			d={}
+	# 			cle=str()
+	# 			d['nom_section']=row[1].value
+	# 			d['MATERIAUX']=list()
+	# 			d['MATERIELS']=list()
+	# 			d['MO']=list()
+	# 		if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','TOTAL MAIN D\'OEUVRE','DESIGNATION']:
+	# 			continue
+	# 		if(row[0].value=="MATERIAUX"):
+	# 			cle='MATERIAUX'
+	# 			continue
+	# 		if(row[0].value=="MATERIELS"):
+	# 			cle='MATERIELS'
+	# 			continue
+	# 		if(row[0].value=="MAIN D'OEUVRE"):
+	# 			cle='MO'
+	# 			continue
+	# 		if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
+	# 			cle=str()
+	# 			continue
+	# 		try:
+	# 			d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
+	# 		except KeyError:
+	# 			pass
+			
+	# 		# Insertion de la section dans la liste
+	# 		if(d in a):
+	# 			continue
+	# 		else:
+	# 			a.append(d)
+	# 		print a
+		# self.env['product.template'].create({'name':'produit_valeur'})
+		
 
 	excel_file = fields.Binary(string='Excel File')
 
@@ -515,7 +737,6 @@ class OuvrageElementaire(models.Model):
 			for col in row:
 				print col.value
 		return True
-
 
 
 

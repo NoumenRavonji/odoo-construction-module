@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
+    	<record id="gent_importer_ouvrage_elementaire_form" model="ir.ui.view">
+			<field name="name">gent.ouvrage.elementaire.form.import</field>
+			<field name="model">gent.ouvrage.elementaire.import</field>
+			<field name="arch" type="xml">
+				<form string="Ouvrage élémentaire">
+                    <group>
+						<field name="excel_file"/>
+						<button name="import_excel" type="object"  string="Importer"/>
+					</group>
+                </form>
+			</field>
+		</record>
 
-        <record id="ouvrage_elementaire_data" model="ir.ui.view">
-            <!-- <field name="parent_id" ref="gent.ouvrage.elementaire_all"/> -->
+		<record model="ir.actions.act_window" id="importer_ouvrage_elementaire_list_action">
+            <field name="name">Importer excel</field>
+            <field name="res_model">gent.ouvrage.elementaire.import</field>
+            <field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="gent_importer_ouvrage_elementaire_form"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un ouvrage élémentaire
+                </p>
+            </field>
         </record>
 
-        <record id="ouvrage_elementaire_data_9" model="ir.ui.view">
-            <field name="product_id">ouvrage elementaire a verifier</field>
-        </record>
-        
+        <menuitem id="importer_ouvrage_elementaire_menu" name="Importer excel" parent="gent_devis_menu"
+                  action="importer_ouvrage_elementaire_list_action"/>
+
     </data>
 </openerp>

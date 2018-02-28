@@ -35,8 +35,10 @@
         'views/type_produit.xml',
         'views/coeff.xml',
         'views/ouvrage_elementaire.xml',
+        'views/ouvrage_elementaire_data.xml',
         'views/bde.xml',
-        'views/avant_metre.xml'
+        'views/avant_metre.xml',
+        # 'datas/test.xlsx'
     ],
     # only loaded in demonstration mode
     'demo': [
