@@ -6,12 +6,15 @@
         <!-- A first level in the left side menu is needed
              before using action= attribute -->
         <menuitem id="main_gent_facturation_menu" name="Facturation"/>
+
         <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
                   parent="main_gent_facturation_menu"/>
 
         <menuitem id="gent_facturation_devis_menu" name="Devis"
-                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/>        
+                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/> 
 
+        <!-- <menuitem id="gent_bons_commande_menu" name="Bons de commande" parent="gent_facturation_devis_bc_menu"
+                  action="purchase.order.view_purchase_order_filter"/> -->
 
 
     </data>
