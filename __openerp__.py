@@ -38,6 +38,7 @@
         'views/ouvrage_elementaire_data.xml',
         'views/bde.xml',
         'views/avant_metre.xml',
+        'views/facturation/facturation.xml',
         # 'datas/test.xlsx'
     ],
     # only loaded in demonstration mode

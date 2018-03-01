@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+
+        <!-- A first level in the left side menu is needed
+             before using action= attribute -->
+        <menuitem id="main_gent_facturation_menu" name="Facturation"/>
+        <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
+                  parent="main_gent_facturation_menu"/>
+
+        <menuitem id="gent_facturation_devis_menu" name="Devis"
+                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/>        
+
+
+
+    </data>
+ </openerp>
