@@ -26,7 +26,16 @@
                  <xpath expr="//field[@name='date_start']" position="replace">
                     <!-- <field name="rubrique"/> -->
                 </xpath>
-                <xpath expr="//field[@name='product_qty']" position="before">
+                <xpath expr="//group" position="after">
+                  
+                    <label for="excel_avantmetre" string="Rubrique Excel"/>
+                  <div>
+                    <field name="excel_avantmetre" />
+                    <button name="import_excel_avant_metre" string="Importer" type="object"  />
+
+                  </div>
+                  
+                  
                 </xpath>
                 <xpath expr="//field[@name='code']" position="before">
                     <field name="nom"/>

@@ -26,7 +26,7 @@
             </field>
         </record>
 
-        <menuitem id="importer_ouvrage_elementaire_menu" name="Importer excel" parent="gent_devis_menu"
+        <menuitem id="importer_ouvrage_elementaire_menu" name="Importer SDP" parent="gent_devis_menu"
                   action="importer_ouvrage_elementaire_list_action"/>
 
     </data>

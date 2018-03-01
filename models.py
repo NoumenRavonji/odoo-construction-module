@@ -28,7 +28,30 @@ class AvantMetre(models.Model):
     ], default='simple')
 
 	partner_id=fields.Many2one('res.partner', 'Client', required=True, select=True)
+	excel_avantmetre = fields.Binary(string='Excel File', store=True)
+
+	@api.multi
+	def import_excel_avant_metre(self):
+		print "IMPORT EXCEL AVANT METRE"
+		my_file = self.excel_avantmetre.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+
+		for row in ws:
+			print row[0].value
+
+		pass
+
+	
 	#rubrique_last = ""
+
+
 	
 	@api.model
 	def create(self,vals,context=None):
@@ -808,6 +831,7 @@ class GentStockPicking(models.Model):
 
 class GentProductProduct(models.Model):
 	_inherit="product.product"
+	_sql_constraints = [('name_unique', 'unique(name_template)', "Le nom de l'article devrait être unique")]
 
 class GentProductUom(models.Model):
 	_inherit="product.uom"
