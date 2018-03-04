@@ -11,6 +11,7 @@ import base64
 from tempfile import TemporaryFile
 import openpyxl
 from openpyxl.utils import coordinate_from_string, column_index_from_string
+import unicodedata
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -37,15 +38,15 @@ class AvantMetre(models.Model):
 		excel_fileobj = TemporaryFile('wb+')
 		excel_fileobj.write(my_file)
 		excel_fileobj.seek(0)
-
 		# Create workbook
 		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
 		# Get the first sheet of excel file
 		ws = wb[wb.get_sheet_names()[0]]
-
+		start = False
 		for row in ws:
-			print row[0].value
 
+			print row[0].value
+	
 		pass
 
 	
@@ -495,6 +496,8 @@ class OuvrageElementaire(models.Model):
 		c=0
 		cle=str()
 		for row in ws:
+			print "ENCODING"
+			print row[0].value
 			if(row[0].value=="N DE PRIX:001"):
 				d={}
 				cle=str()
@@ -510,9 +513,12 @@ class OuvrageElementaire(models.Model):
 			if(row[0].value=="MATERIELS"):
 				cle='MATERIELS'
 				continue
-			if(row[0].value=="MAIN D'OEUVRE"):
-				cle='MO'
-				continue
+
+			
+			if(row[0].value != None):
+				if((self.strip_accents(row[0].value) == "MAIN D'OEUVRE")):
+					cle='MO'
+					continue
 			if(row[0].value==None):
 				if(row[3].value==None):
 					continue	
@@ -520,6 +526,8 @@ class OuvrageElementaire(models.Model):
 					row[0].value=cle+'-'+d['nom_section']
 			if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
 				cle=str()
+				continue
+			if(row[2].value==None and row[3].value==None):
 				continue
 			if(row[1].value==None):
 				row[1].value='u'
@@ -637,6 +645,9 @@ class OuvrageElementaire(models.Model):
 					print "BDE_composant existant"
 				else:
 					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':mo['Prix Unitaire'],'product_uom_qty':mo['Quantite'],'gent_oe_mo_line_id':id_line.id})
+	def strip_accents(self, text):
+		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')
+
 	
 class OuvrageElementaire(models.Model):
 	_name = "gent.ouvrage.elementaire"

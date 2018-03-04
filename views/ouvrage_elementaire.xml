@@ -66,7 +66,7 @@
             <field name="res_model">gent.ouvrage.elementaire</field>
             <field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-			<field name="view_id" ref="gent_ouvrage_elementaire_form"/>
+			<!-- <field name="view_id" ref="gent_ouvrage_elementaire_form"/> -->
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">Créer un ouvrage élémentaire
                 </p>
@@ -75,6 +75,8 @@
 
         <menuitem id="ouvrage_elementaire_menu" name="Ouvrage élémentaire" parent="gent_devis_menu"
                   action="ouvrage_elementaire_list_action"/>
+
+         
 
     </data>
 </openerp>
