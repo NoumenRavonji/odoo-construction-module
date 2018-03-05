@@ -17,3 +17,12 @@ report_layout_category_1,report_layout_category_1,model_sale_layout_category,gro
 
 access_gent_stock_move_manager,stock.move manager,model_stock_move,group_coordinateur_travaux,1,1,1,1
 access_gent_stock_picking_user,stock.picking user,model_stock_picking,group_coordinateur_travaux,1,1,1,1
+
+
+access_gent_stock_picking_user,stock.picking user,model_stock_picking,group_coordinateur_travaux,1,1,1,1
+
+
+
+access_gent_facturation_sale_order,gent.sale.order,model_sale_order,group_gent_facturation_responsable,1,1,1,1
+
+
