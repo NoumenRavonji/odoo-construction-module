@@ -40,12 +40,12 @@
         
         <menuitem id="gent_facturation_factures_fournisseur_menu" name="Factures fournisseur" parent="gent_facturation_fournisseurs_menu" action="account.action_invoice_tree2"/>
           
-        <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
-                  parent="gent_facturation_frns_menu" action="account_voucher.action_vendor_payment"/> 
+        <!-- <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
+                  parent="gent_facturation_frns_menu" action="account_voucher.action_vendor_payment"/> --> 
                   
 
-        <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
-                  parent="gent_facturation_frns_menu" action="base.action_partner_supplier_form"/> 
+        <!-- <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
+                  parent="gent_facturation_frns_menu" action="base.action_partner_supplier_form"/>  -->
 
 
 
