@@ -13,6 +13,42 @@
         <menuitem id="gent_facturation_devis_menu" name="Devis"
                   parent="gent_facturation_devis_bc_menu" action="devis_list_action"/> 
 
+        <menuitem id="gent_facturation_bc_menu" name="Bon de commande"
+                  parent="gent_facturation_devis_bc_menu" action="sale.action_orders"/> 
+
+
+
+                  <!-- CLIENTS -->
+
+         <menuitem id="gent_facturation_clients_menu" name="Clients"
+                  parent="main_gent_facturation_menu"/>
+
+         <menuitem id="gent_facturation_factures_clients_menu" name="Factures Clients"
+                  parent="gent_facturation_clients_menu" action="account.action_invoice_tree1"/> 
+
+        <menuitem id="gent_facturation_paiements_clients_menu" name="Paiements Clients"
+                  parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt"/> 
+
+        <menuitem id="gent_facturation_clients_clients_menu" name="Clients"
+                  parent="gent_facturation_clients_menu" action="base.action_partner_form"/> 
+
+
+                  <!-- FOURNISSEURS -->
+        <menuitem id="gent_facturation_frns_menu" name="Fournisseurs"
+                  parent="main_gent_facturation_menu"/>
+                  
+        <menuitem id="gent_facturation_factures_fournisseurs_menu" name="Factures Fournisseurs"
+                  parent="gent_facturation_frns_menu" action="account.action_invoice_tree2"/> 
+
+                  
+        <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
+                  parent="gent_facturation_frns_menu" action="account_voucher.action_vendor_payment"/> 
+                  
+
+        <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
+                  parent="gent_facturation_frns_menu" action="base.action_partner_supplier_form"/> 
+
+
         <!-- <menuitem id="gent_bons_commande_menu" name="Bons de commande" parent="gent_facturation_devis_bc_menu"
                   action="purchase.order.view_purchase_order_filter"/> -->
 

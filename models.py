@@ -44,10 +44,15 @@ class AvantMetre(models.Model):
 		ws = wb[wb.get_sheet_names()[0]]
 		start = False
 		for row in ws:
-
 			print row[0].value
+			print row[0].value.encode('ascii', 'xmlcharrefreplace')
 	
 		pass
+
+	@api.multi
+	def strip_accents(self, text):
+		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')
+
 
 	
 	#rubrique_last = ""
@@ -516,7 +521,7 @@ class OuvrageElementaire(models.Model):
 
 			
 			if(row[0].value != None):
-				if((self.strip_accents(row[0].value) == "MAIN D'OEUVRE")):
+				if((row[0].value == "MAIN D'OEUVRE") or (row[0].value.encode('ascii', 'xmlcharrefreplace') == "MAIN D'&#338;UVRE" )):
 					cle='MO'
 					continue
 			if(row[0].value==None):

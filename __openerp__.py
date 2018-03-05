@@ -32,12 +32,14 @@
         'security/gent_security.xml',
         'security/ir.model.access.csv',
         'templates.xml',
+        'views/avant_metre.xml',
+        'views/bde.xml',
         'views/type_produit.xml',
         'views/coeff.xml',
         'views/ouvrage_elementaire.xml',
         'views/ouvrage_elementaire_data.xml',
-        'views/bde.xml',
-        'views/avant_metre.xml',
+        
+        
         'views/facturation/facturation.xml',
         # 'datas/test.xlsx'
     ],
