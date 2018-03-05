@@ -1,7 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
+    	
+    	<record id="clients_list_action" model="ir.actions.act_window">
+            <field name="name">Clients</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+        </record>
 
+        <record id="fournisseurs_list_action" model="ir.actions.act_window">
+            <field name="name">Fournisseurs</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+        </record>
+
+        <record id="paiements_fournisseurs_list_action" model="ir.actions.act_window">
+            <field name="name">Paiements fournisseurs</field>
+            <field name="res_model">account.voucher</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+        </record>
+
+        <record id="bons_de_commande_list_action" model="ir.actions.act_window">
+            <field name="name">Bons de commandes</field>
+            <field name="res_model">account.voucher</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+        </record>
 
         <!-- A first level in the left side menu is needed
              before using action= attribute -->
@@ -10,11 +41,25 @@
         <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
                   parent="main_gent_facturation_menu"/>
 
-        <menuitem id="gent_facturation_devis_menu" name="Devis"
-                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/> 
+	        <menuitem id="gent_facturation_devis_menu" name="Devis"
+	                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/>
+	        <menuitem id="gent_facturation_bons_de_commande" name="Bons de commande" parent="gent_facturation_devis_bc_menu" action="devis_list_action"/>
 
-        <!-- <menuitem id="gent_bons_commande_menu" name="Bons de commande" parent="gent_facturation_devis_bc_menu"
-                  action="purchase.order.view_purchase_order_filter"/> -->
+        <menuitem id="gent_facturation_clients_menu" name="Clients"
+                  parent="main_gent_facturation_menu" action="avant_metre_list_action"/>
+	        <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1"/>
+	        <!-- <menuitem id="gent_facturation_notes_de_credit_menu" name="Avoirs clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree3" sequence="2"/> -->
+	        <!-- <menuitem id="gent_facturation_recu_vente_menu" name="Reçus de ventes" parent="gent_facturation_clients_menu" action="account_voucher.action_sale_receipt" sequence="3"/> -->
+	        <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt"/>
+	        <menuitem id="gent_facturation_les_clients_menu" name="Clients" parent="gent_facturation_clients_menu" action="clients_list_action"/>
+
+        <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
+                  parent="main_gent_facturation_menu" action="avant_metre_list_action"/>
+        	<menuitem id="gent_facturation_factures_fournisseur_menu" name="Factures fournisseur" parent="gent_facturation_fournisseurs_menu" action="account.action_invoice_tree2"/>
+        	<!-- <menuitem id="gent_facturation_notes_credit_menu" name="Notes de crédit" parent="gent_facturation_fournisseurs_menu" action="account.action_invoice_tree4"/> -->
+        	<!-- <menuitem id="gent_facturation_recu_achat_menu" name="Reçus d'achat" parent="gent_facturation_fournisseurs_menu" action="account_voucher.action_purchase_receipt"/> -->
+        	<menuitem id="gent_facturation_paiement_fournisseur_menu" name="Paiements fournisseurs" parent="gent_facturation_fournisseurs_menu" action="paiements_fournisseurs_list_action"/>
+        	<menuitem id="gent_facturation_les_fournisseurs_menu" name="Fournisseurs" parent="gent_facturation_fournisseurs_menu" action="fournisseurs_list_action"/>
 
 
     </data>

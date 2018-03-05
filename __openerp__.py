@@ -39,7 +39,7 @@
         'views/bde.xml',
         'views/avant_metre.xml',
         'views/facturation/facturation.xml',
-        # 'datas/test.xlsx'
+        'datas/test.xlsx'
     ],
     # only loaded in demonstration mode
     'demo': [
