@@ -103,7 +103,7 @@
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
-                                <field name="price_subtotal" />
+                                <field name="price_subtotal" sum="Total Matériaux" />
 
                           </tree>
 
@@ -116,7 +116,7 @@
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
-                                <field name="price_subtotal" />
+                                <field name="price_subtotal" sum="Total Matériels" />
 
                               </tree>
 
@@ -129,7 +129,7 @@
                                 <field name="product_uom" />
                                 <field name="product_uom_qty" />
                                 <field name="price_unit" />
-                                <field name="price_subtotal" />
+                                <field name="price_subtotal" sum="Total Main d'oeuvre" />
 
                               </tree>
 

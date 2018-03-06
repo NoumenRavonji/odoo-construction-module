@@ -43,9 +43,78 @@ class AvantMetre(models.Model):
 		# Get the first sheet of excel file
 		ws = wb[wb.get_sheet_names()[0]]
 		start = False
+		sections =[]
+		self.rubrique_line_ids = []
+		rubrique =""
+		lines = []
+		start_line =False
 		for row in ws:
-			print row[0].value
-			print row[0].value.encode('ascii', 'xmlcharrefreplace')
+			val1 = row[0].value
+			val2 = row[1].value
+			val3 = row[2].value
+			val4 = row[3].value
+			val5 = row[4].value
+			val6 = row[4].value
+			if(val1 =="REF"):
+				start = True
+				continue
+			if(start):
+				print "start"
+
+				# SECTION
+
+				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
+
+					if(len(lines) > 0):
+						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+						lines =[]
+						start_line = False
+					start_line = True
+
+					if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
+						rubrique = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).rubrique
+					else:
+						rubrique = val1
+
+					
+
+				# ADDING SECTION LINES
+				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+					# ouvrage elementaire
+					if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+						print "product exist"
+					else:
+						print "create product"
+						print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
+						self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
+
+					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
+
+					# unite
+					if(self.env['product.uom'].search([['name', "=",val3]])):
+						print "uom exist"
+					else:
+						self.env['product.uom'].create({'name': val3, 'category_id': 1})
+
+					product_uom = self.env['product.uom'].search([['name', "=",val3]])
+
+					# qté
+					print "VALEURS"
+					print val2
+					print val3
+					print val4
+					product_qty = float(val4)
+					if(product_qty > 0):
+						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_qty": product_qty})
+						print "LINE OK"
+						print line
+						lines.append(line)
+
+		print "SECTIONS"
+		print sections
+		self.rubrique_line_ids = sections
+
+
 	
 		pass
 
@@ -437,7 +506,8 @@ class GentSaleOrderLine(models.Model):
 
 					})
 		if(self.ouvrage_elementaire.materiel_line):
-			self.materiel_line = self.ouvrage_elementaire.materiel_line
+			for line3 in self.materiaux_line:
+				line3 = False
 			for line in self.ouvrage_elementaire.materiel_line:
 				self.materiel_line +=self.materiel_line.new({
 						'product_id': line.product_id,
