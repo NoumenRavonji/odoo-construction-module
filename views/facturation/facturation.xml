@@ -9,8 +9,7 @@
         <menuitem id="main_gent_facturation_menu" name="Facturation"/>
 
 
-        <!-- Devis et BC -->
-
+        <!-- DEVIS ET BC -->
         <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
                   parent="main_gent_facturation_menu"/>
 
@@ -21,31 +20,31 @@
                   parent="gent_facturation_devis_bc_menu" action="sale.action_orders"/> 
 
 
-                  <!-- CLIENTS -->
-
+        <!-- CLIENTS -->
         <menuitem id="gent_facturation_clients_menu" name="Clients"
-                  parent="main_gent_facturation_menu" action="avant_metre_list_action"/>
-	        <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1"/>
-	        <!-- <menuitem id="gent_facturation_notes_de_credit_menu" name="Avoirs clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree3" sequence="2"/> -->
-	        <!-- <menuitem id="gent_facturation_recu_vente_menu" name="Reçus de ventes" parent="gent_facturation_clients_menu" action="account_voucher.action_sale_receipt" sequence="3"/> -->
-	        <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt"/>
+                  parent="main_gent_facturation_menu" action="avant_metre_list_action" groups="group_gent_facturation_responsable"/>
+	       <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1" groups="group_gent_facturation_responsable"/>
+
+	       <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt" groups="group_gent_facturation_responsable"/>
+
 	       <menuitem id="gent_facturation_clients_clients_menu" name="Clients"
-                  parent="gent_facturation_clients_menu" action="base.action_partner_form"/>
+                  parent="gent_facturation_clients_menu" action="base.action_partner_form" groups="group_gent_facturation_responsable"/>
 
 
 
-                  <!-- FOURNISSEURS -->
+        <!-- FOURNISSEURS -->
         <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
                   parent="main_gent_facturation_menu" action="avant_metre_list_action"/>
         
         <menuitem id="gent_facturation_factures_fournisseur_menu" name="Factures fournisseur" parent="gent_facturation_fournisseurs_menu" action="account.action_invoice_tree2"/>
           
-        <!-- <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
-                  parent="gent_facturation_frns_menu" action="account_voucher.action_vendor_payment"/> --> 
+
+        <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
+                  parent="gent_facturation_fournisseurs_menu" action="account_voucher.action_vendor_payment"/> 
                   
 
-        <!-- <menuitem id="gent_facturation_fournisseurs_menu" name="Fournisseurs"
-                  parent="gent_facturation_frns_menu" action="base.action_partner_supplier_form"/>  -->
+        <menuitem id="gent_facturation_fournisseurs_fournisseurs_menu" name="Fournisseurs"
+                  parent="gent_facturation_fournisseurs_menu" action="base.action_partner_supplier_form"/> 
 
 
 

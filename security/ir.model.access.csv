@@ -21,8 +21,6 @@ access_gent_stock_picking_user,stock.picking user,model_stock_picking,group_coor
 
 access_gent_stock_picking_user,stock.picking user,model_stock_picking,group_coordinateur_travaux,1,1,1,1
 
-
-
 access_gent_facturation_sale_order,gent.sale.order,model_sale_order,group_gent_facturation_responsable,1,1,1,1
-
-
+access_gent_account_invoice,gent.account.invoice,model_account_invoice,group_gent_facturation_responsable,1,1,1,1
+access_gent_facturation_invoice_line,gent.account.invoice.line,model_account_invoice_line,group_gent_facturation_responsable,1,1,1,1
