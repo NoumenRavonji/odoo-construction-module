@@ -14,7 +14,7 @@
                                             <field name="product_uom" />
                                             <field name="price_unit" invisible="1"/>
                                             <field name="prix_debourse" />
-
+                                            <field name="rendement" />
                                     </group>
 
                                     <label for="materiaux_line"/>

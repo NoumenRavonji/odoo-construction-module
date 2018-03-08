@@ -8,7 +8,6 @@
 
         <menuitem id="main_gent_facturation_menu" name="Facturation" groups="group_gent_facturation_responsable" />
 
-
         <!-- DEVIS ET BC -->
         <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
                   parent="main_gent_facturation_menu" groups="group_gent_facturation_responsable" />
@@ -20,15 +19,18 @@
                   parent="gent_facturation_devis_bc_menu" action="sale.action_orders" groups="group_gent_facturation_responsable" /> 
 
 
+
         <!-- CLIENTS -->
         <menuitem id="gent_facturation_clients_menu" name="Clients"
                   parent="main_gent_facturation_menu" groups="group_gent_facturation_responsable"/>
 	       <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1" groups="group_gent_facturation_responsable"/>
 
-	       <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt" groups="group_gent_facturation_responsable"/>
+
+	       <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt"/>
 
 	       <menuitem id="gent_facturation_clients_clients_menu" name="Clients"
                   parent="gent_facturation_clients_menu" action="base.action_partner_form" groups="group_gent_facturation_responsable" />
+
 
 
 
