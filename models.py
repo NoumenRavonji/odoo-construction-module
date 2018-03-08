@@ -36,7 +36,7 @@ class AvantMetre(models.Model):
 		print "IMPORT EXCEL AVANT METRE"
 		my_file = self.excel_avantmetre.decode('base64')
 		excel_fileobj = TemporaryFile('wb+')
-		excel_fileobj.write(my_file)
+		excel_fileobj.wr000ite(my_file)
 		excel_fileobj.seek(0)
 		# Create workbook
 		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
