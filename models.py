@@ -440,8 +440,8 @@ class GentSaleOrderLine(models.Model):
 			for line in record.materiaux_line:
 				somme_materiaux += line.price_subtotal
 	
-		self.prix_debourse = somme_mo + somme_materiel + somme_materiaux
-		self.price_unit = somme_mo + somme_materiel + somme_materiaux
+		self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)/self.rendement
+		self.price_unit = (somme_mo + somme_materiel + somme_materiaux)/self.rendement
 		print self.prix_debourse
 		print self.price_unit
 
@@ -580,6 +580,7 @@ class OuvrageElementaire(models.Model):
 				d['MATERIAUX']=list()
 				d['MATERIELS']=list()
 				d['MO']=list()
+				d['rendement']=0
 			if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
 				continue
 			if(row[0].value=="MATERIAUX"):
@@ -600,7 +601,13 @@ class OuvrageElementaire(models.Model):
 				else:
 					row[0].value=cle+'-'+d['nom_section']
 			if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
-				cle=str()
+				# cle=str()
+				continue
+			if(row[0].value=='Coeficient K='):
+				continue
+			if(row[0].value=="Rendement R="):
+				d['rendement']=row[4].value
+				cle=""
 				continue
 			if(row[2].value==None and row[3].value==None):
 				continue
@@ -619,7 +626,7 @@ class OuvrageElementaire(models.Model):
 			else:
 				a.append(d)
 			# print d['nom_section']
-
+			print a[0]['rendement']
 		for ouvrage in a:
 			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
 				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
@@ -629,7 +636,7 @@ class OuvrageElementaire(models.Model):
 			if (self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])):
 				print "ouvrage elementaire existant"
 			else:
-				self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1})
+				self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1,'rendement':ouvrage['rendement']})
 			id_line = self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])
 			print ouvrage['nom_section'], ":",id_line.id
 
@@ -738,7 +745,7 @@ class OuvrageElementaire(models.Model):
 	price_unit= fields.Float('Unit Price', store=True, readonly=True)
 	product_uom_qty= fields.Float('Quantity',default=1, digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True)
 	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True)
-
+	rendement = fields.Float('Rendement',default=1,required=True)
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
 	
 
@@ -903,11 +910,7 @@ class Coeff(models.Model):
 class GentSaleLayout(models.Model):
 	_inherit="sale_layout.category"
 
-class GencInvoice(models.Model):
-	_inherit="account.invoice"
 
-class GencInvoiceLine(models.Model):
-	_inherit="account.invoice.line"
 
 class GentStockMove(models.Model):
 	_inherit="stock.move"

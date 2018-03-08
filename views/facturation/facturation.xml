@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
     <data>
-    	
 
 
         <!-- A first level in the left side menu is needed
              before using action= attribute -->
-        <menuitem id="main_gent_facturation_menu" name="Facturation"/>
+
+        <menuitem id="main_gent_facturation_menu" name="Facturation" groups="group_gent_facturation_responsable" />
 
 
         <!-- DEVIS ET BC -->
         <menuitem id="gent_facturation_devis_bc_menu" name="Devis et BC"
-                  parent="main_gent_facturation_menu"/>
+                  parent="main_gent_facturation_menu" groups="group_gent_facturation_responsable" />
 
 	        <menuitem id="gent_facturation_devis_menu" name="Devis"
-	                  parent="gent_facturation_devis_bc_menu" action="devis_list_action"/>
+	                  parent="gent_facturation_devis_bc_menu" action="devis_list_action" groups="group_gent_facturation_responsable" />
 
           <menuitem id="gent_facturation_bc_menu" name="Bon de commande"
-                  parent="gent_facturation_devis_bc_menu" action="sale.action_orders"/> 
+                  parent="gent_facturation_devis_bc_menu" action="sale.action_orders" groups="group_gent_facturation_responsable" /> 
 
 
         <!-- CLIENTS -->
         <menuitem id="gent_facturation_clients_menu" name="Clients"
-                  parent="main_gent_facturation_menu" action="avant_metre_list_action"/>
-	       <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1"/>
+                  parent="main_gent_facturation_menu" groups="group_gent_facturation_responsable"/>
+	       <menuitem id="gent_facturation_factures_clients_menu" name="Factures clients" parent="gent_facturation_clients_menu" action="account.action_invoice_tree1" sequence="1" groups="group_gent_facturation_responsable"/>
 
-	       <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt"/>
+	       <menuitem id="gent_facturation_paiement_menu" name="Paiements client" parent="gent_facturation_clients_menu" action="account_voucher.action_vendor_receipt" groups="group_gent_facturation_responsable"/>
 
 	       <menuitem id="gent_facturation_clients_clients_menu" name="Clients"
-                  parent="gent_facturation_clients_menu" action="base.action_partner_form"/>
+                  parent="gent_facturation_clients_menu" action="base.action_partner_form" groups="group_gent_facturation_responsable" />
 
 
 
@@ -38,6 +38,7 @@
         
         <menuitem id="gent_facturation_factures_fournisseur_menu" name="Factures fournisseur" parent="gent_facturation_fournisseurs_menu" action="account.action_invoice_tree2"/>
           
+
         <menuitem id="gent_facturation_paiements_fournisseurs_menu" name="Paiements Fournisseurs"
                   parent="gent_facturation_fournisseurs_menu" action="account_voucher.action_vendor_payment"/> 
                   
