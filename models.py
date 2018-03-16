@@ -36,7 +36,7 @@ class AvantMetre(models.Model):
 		print "IMPORT EXCEL AVANT METRE"
 		my_file = self.excel_avantmetre.decode('base64')
 		excel_fileobj = TemporaryFile('wb+')
-		excel_fileobj.wr000ite(my_file)
+		excel_fileobj.write(my_file)
 		excel_fileobj.seek(0)
 		# Create workbook
 		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
@@ -187,7 +187,6 @@ class Product2(models.Model):
 class Bde(models.Model):
 	_inherit = "sale.order"
 	
-
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 	is_bde = fields.Boolean("BDE", default=True)
@@ -406,6 +405,7 @@ class GentSaleOrderLine(models.Model):
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels")
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux")
 
+	rendement = fields.Float('Rendement',default=1,required=True,compute="_compute_rendement")
 	mo_lines_subtotal = fields.Float('Total')
 	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True)
 
@@ -419,6 +419,10 @@ class GentSaleOrderLine(models.Model):
 		for record in self:
 			record.price_subtotal= record.price_unit * record.product_uom_qty
 
+	@api.depends('ouvrage_elementaire')
+	def _compute_rendement(self):
+		for record in self:
+			record.rendement = record.ouvrage_elementaire.rendement
 	@api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
 	def _compute_oe_pu(self):
@@ -433,17 +437,26 @@ class GentSaleOrderLine(models.Model):
 		# except:
 		# 	print "Erreur d'index"
 		for record in self:
+			print record
 			for line in record.mo_line:
 				somme_mo += line.price_subtotal
 			for line in record.materiel_line:
 				somme_materiel += line.price_subtotal
 			for line in record.materiaux_line:
 				somme_materiaux += line.price_subtotal
-	
-		self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)/self.rendement
-		self.price_unit = (somme_mo + somme_materiel + somme_materiaux)/self.rendement
+		if self.ouvrage_elementaire.rendement == 0:
+			self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
+			self.price_unit = (somme_mo + somme_materiel + somme_materiaux)
+		else:
+			# self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
+			self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
+			self.price_unit = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
+		print "BDE PRIX DEBOURSE"
 		print self.prix_debourse
 		print self.price_unit
+		id_ouvrage = self.ouvrage_elementaire.rendement
+		if id_ouvrage != 0:
+			print self.price_unit/id_ouvrage
 
 		# somme_mo = 0
 		# somme_materiaux = 0
@@ -606,7 +619,7 @@ class OuvrageElementaire(models.Model):
 			if(row[0].value=='Coeficient K='):
 				continue
 			if(row[0].value=="Rendement R="):
-				d['rendement']=row[4].value
+				d['rendement']=row[1].value
 				cle=""
 				continue
 			if(row[2].value==None and row[3].value==None):
@@ -737,6 +750,7 @@ class OuvrageElementaire(models.Model):
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True), ('gent_type', '=', 'ouvrage_elementaire')], change_default=True, required=True, ondelete='restrict')
 
+	rendement = fields.Float('Rendement',default=1,required=True)
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute='_compute_oe_pu')
 
 	mo_line = fields.One2many('gent.bde.composant', 'gent_oe_mo_line_id', "Main d'oeuvre", copy=True)
@@ -745,7 +759,7 @@ class OuvrageElementaire(models.Model):
 	price_unit= fields.Float('Unit Price', store=True, readonly=True)
 	product_uom_qty= fields.Float('Quantity',default=1, digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True)
 	product_uom =  fields.Many2one('product.uom', 'Unit of Measure ', required=True)
-	rendement = fields.Float('Rendement',default=1,required=True)
+
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
 	
 
@@ -828,10 +842,12 @@ class OuvrageElementaire(models.Model):
 			for line in record.materiaux_line:
 				somme_materiaux += line.price_subtotal
 	
-		self.prix_debourse = somme_mo + somme_materiel + somme_materiaux
-		self.price_unit = somme_mo + somme_materiel + somme_materiaux
+		self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
+		self.price_unit = (somme_mo + somme_materiel + somme_materiaux)
+		print "PRIX DEBOURSE"
 		print self.prix_debourse
 		print self.price_unit
+		print self.rendement
 
 	@api.depends('price_unit','product_uom_qty')
 	def _compute_order_line_montant(self):
@@ -927,3 +943,8 @@ class GentProductUom(models.Model):
 
 class GentProductPriceHistory(models.Model):
 	_inherit="product.price.history"
+
+class GentAccount(models.Model):
+	_inherit = "account.invoice"
+
+	avantmetre = fields.Float('AvantMetre')
