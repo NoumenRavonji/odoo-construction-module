@@ -582,64 +582,42 @@ class OuvrageElementaire(models.Model):
 		a=list()
 		d=dict()
 		c=0
-		cle=str()
 		for row in ws:
-			print "ENCODING"
-			print row[0].value
-			if(row[0].value=="N DE PRIX:001"):
+			if(row[0].value=="DESIGNATION" and row[2].value!=None):
+
 				d={}
-				cle=str()
-				d['nom_section']=row[1].value
+				key=str()
+				d['nom_section']=row[2].value
 				d['MATERIAUX']=list()
 				d['MATERIELS']=list()
 				d['MO']=list()
-				d['rendement']=0
-			if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
+			if(row[0].value=="A -MAIN D'OEUVRE"):
+				key='MO'
 				continue
-			if(row[0].value=="MATERIAUX"):
-				cle='MATERIAUX'
+			if(row[0].value=="B - MATERIAUX"):
+				key='MATERIAUX'
 				continue
-			if(row[0].value=="MATERIELS"):
-				cle='MATERIELS'
-				continue
-
-			
-			if(row[0].value != None):
-				if((row[0].value == "MAIN D'OEUVRE") or (row[0].value.encode('ascii', 'xmlcharrefreplace') == "MAIN D'&#338;UVRE" )):
-					cle='MO'
-					continue
-			if(row[0].value==None):
-				if(row[3].value==None):
-					continue	
-				else:
-					row[0].value=cle+'-'+d['nom_section']
-			if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
-				# cle=str()
-				continue
-			if(row[0].value=='Coeficient K='):
-				continue
-			if(row[0].value=="Rendement R="):
-				d['rendement']=row[1].value
-				cle=""
-				continue
-			if(row[2].value==None and row[3].value==None):
+			if(row[0].value=="C - MATERIEL - OUTILLAGE"):
+				key='MATERIELS'
 				continue
 			if(row[1].value==None):
-				row[1].value='u'
-			# if(row[1].value==None):
-			# 	continue
+				continue
+			if(row[3].value==0):
+				continue
+			if(row[1].value == "DESIGNATION" and row[2].value=="U" and row[3].value=="QUANTITES" and row[4].value=="PRIX UNITAIRE"):
+				continue
 			try:
-				d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
-			except KeyError:
+				d[key].append({'Designation':row[1].value,'Unite':row[2].value,'Quantite':row[3].value,'Prix Unitaire':row[4].value})
+			except:
 				pass
 			
 			# Insertion de la section dans la liste
 			if(d in a):
 				continue
+			if(d=={}):
+				continue
 			else:
 				a.append(d)
-			# print d['nom_section']
-			print a[0]['rendement']
 		for ouvrage in a:
 			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
 				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
@@ -649,7 +627,7 @@ class OuvrageElementaire(models.Model):
 			if (self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])):
 				print "ouvrage elementaire existant"
 			else:
-				self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1,'rendement':ouvrage['rendement']})
+				self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1})
 			id_line = self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])
 			print ouvrage['nom_section'], ":",id_line.id
 
@@ -740,6 +718,171 @@ class OuvrageElementaire(models.Model):
 					print "BDE_composant existant"
 				else:
 					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':mo['Prix Unitaire'],'product_uom_qty':mo['Quantite'],'gent_oe_mo_line_id':id_line.id})
+	#nouvel_import
+		# print "DISPLAYING EXCEL"
+		# 	a=list()
+		# 	d=dict()
+		# 	c=0
+		# 	cle=str()
+		# 	for row in ws:
+		# 		print "ENCODING"
+		# 		print row[0].value
+		# 		if(row[0].value=="N DE PRIX:001"):
+		# 			d={}
+		# 			cle=str()
+		# 			d['nom_section']=row[1].value
+		# 			d['MATERIAUX']=list()
+		# 			d['MATERIELS']=list()
+		# 			d['MO']=list()
+		# 			d['rendement']=0
+		# 		if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
+		# 			continue
+		# 		if(row[0].value=="MATERIAUX"):
+		# 			cle='MATERIAUX'
+		# 			continue
+		# 		if(row[0].value=="MATERIELS"):
+		# 			cle='MATERIELS'
+		# 			continue
+
+				
+		# 		if(row[0].value != None):
+		# 			if((row[0].value == "MAIN D'OEUVRE") or (row[0].value.encode('ascii', 'xmlcharrefreplace') == "MAIN D'&#338;UVRE" )):
+		# 				cle='MO'
+		# 				continue
+		# 		if(row[0].value==None):
+		# 			if(row[3].value==None):
+		# 				continue	
+		# 			else:
+		# 				row[0].value=cle+'-'+d['nom_section']
+		# 		if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
+		# 			# cle=str()
+		# 			continue
+		# 		if(row[0].value=='Coeficient K='):
+		# 			continue
+		# 		if(row[0].value=="Rendement R="):
+		# 			d['rendement']=row[1].value
+		# 			cle=""
+		# 			continue
+		# 		if(row[2].value==None and row[3].value==None):
+		# 			continue
+		# 		if(row[1].value==None):
+		# 			row[1].value='u'
+		# 		# if(row[1].value==None):
+		# 		# 	continue
+		# 		try:
+		# 			d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
+		# 		except KeyError:
+		# 			pass
+				
+		# 		# Insertion de la section dans la liste
+		# 		if(d in a):
+		# 			continue
+		# 		else:
+		# 			a.append(d)
+		# 		# print d['nom_section']
+		# 		print a[0]['rendement']
+		# 	for ouvrage in a:
+		# 		if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
+		# 			print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
+		# 		else:
+		# 			self.env['product.template'].create({'name':ouvrage['nom_section'],'gent_type':'ouvrage_elementaire'})
+		# 		id_ouv = self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
+		# 		if (self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])):
+		# 			print "ouvrage elementaire existant"
+		# 		else:
+		# 			self.env['gent.ouvrage.elementaire'].create({'product_id':id_ouv,'product_uom':1,'rendement':ouvrage['rendement']})
+		# 		id_line = self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])
+		# 		print ouvrage['nom_section'], ":",id_line.id
+
+		# 		for materiaux in ouvrage['MATERIAUX']:
+		# 			print "MATERIAUX ",materiaux['Designation']
+		# 			if materiaux['Unite'] == 'u':
+		# 				materiaux['Unite']='Unité(s)'
+		# 			elif materiaux['Unite'] == 'l':
+		# 				materiaux['Unite']='Litre(s)'
+		# 			elif materiaux['Unite'] == 'Fft':
+		# 				materiaux['Unite'] = 'fft'
+		# 			elif materiaux['Unite'] == None:
+		# 				continue
+		# 			if(self.env['product.uom'].search([['name','=',materiaux['Unite']]])):
+		# 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+		# 				print id_unit_mo
+		# 			else:
+		# 				print "unite qui n'existe pas encore"
+		# 				self.env['product.uom'].create({'name':materiaux['Unite'],'category_id':1})
+		# 			if(self.env['product.product'].search([['name','=',materiaux['Designation']]])):
+		# 				print "Le produit existe deja"
+		# 			else:
+		# 				self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux'})
+		# 			id_mo = self.env['product.product'].search([('name','=',materiaux['Designation'])]).id
+		# 			print id_mo
+		# 			id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+		# 			print "ID_LINE : ",id_line.id
+					
+		# 			if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',materiaux['Prix Unitaire']],['product_uom_qty','=',materiaux['Quantite']],['gent_oe_materaux_id','=',id_line.id]])):
+		# 				print "BDE_composant existant"
+		# 			else:
+		# 				self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiaux['Prix Unitaire'],'product_uom_qty':materiaux['Quantite'],'gent_oe_materaux_id':id_line.id})
+		# 		for materiel in ouvrage['MATERIELS']:
+
+		# 			if materiel['Unite'] == 'u':
+		# 				materiel['Unite']='Unité(s)'
+		# 			elif materiel['Unite'] == 'l':
+		# 				materiel['Unite']='Litre(s)'
+		# 			elif materiel['Unite'] == 'Fft':
+		# 				materiel['Unite'] = 'fft'
+		# 			elif materiel['Unite'] == None:
+		# 				continue
+		# 			if(self.env['product.uom'].search([['name','=',materiel['Unite']]])):
+		# 				id_unit_mo = self.env['product.uom'].search([('name','=',materiel['Unite'])]).id
+		# 				print id_unit_mo
+		# 			else:
+		# 				print "unite qui n'existe pas encore"
+		# 				self.env['product.uom'].create({'name':materiel['Unite'],'category_id':1})
+		# 			if(self.env['product.product'].search([['name','=',materiel['Designation']]])):
+		# 				print "Le produit existe deja"
+		# 			else:
+		# 				self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel'})
+		# 			id_mo = self.env['product.product'].search([('name','=',materiel['Designation'])]).id
+		# 			print id_mo
+		# 			id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
+		# 			print "ID_LINE : ",id_line.id
+					
+		# 			if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',materiel['Prix Unitaire']],['product_uom_qty','=',materiel['Quantite']],['gent_oe_materiel_id','=',id_line.id]])):
+		# 				print "BDE_composant existant"
+		# 			else:
+		# 				self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiel['Prix Unitaire'],'product_uom_qty':materiel['Quantite'],'gent_oe_materiel_id':id_line.id})
+		# 		for mo in ouvrage['MO']:
+		# 			print "MO ",mo['Designation']
+		# 			if mo['Unite'] in ['','u','u ']:
+		# 				mo['Unite']='Unité(s)'
+		# 			elif mo['Unite'] == 'l':
+		# 				mo['Unite']='Litre(s)'
+		# 			elif mo['Unite'] == 'Fft':
+		# 				mo['Unite'] = 'fft'
+		# 			elif mo['Unite'] == None:
+		# 				continue
+		# 			if(self.env['product.uom'].search([['name','=',mo['Unite']]])):
+		# 				id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
+		# 				print id_unit_mo
+		# 			else:
+		# 				print "unite qui n'existe pas encore"
+		# 				self.env['product.uom'].create({'name':mo['Unite'],'category_id':1})
+		# 			if(self.env['product.product'].search([['name','=',mo['Designation']]])):
+		# 				print "Le produit existe deja"
+		# 			else:
+		# 				self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre'})
+		# 			id_mo = self.env['product.product'].search([('name','=',mo['Designation'])]).id
+		# 			print id_mo
+		# 			id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
+		# 			print "ID_LINE : ",id_line.id
+		# 			print "HELLO"
+		# 			if(self.env['gent.bde.composant'].search([['product_id','=',id_mo],['product_uom','=',id_unit_mo],['price_unit','=',mo['Prix Unitaire']],['product_uom_qty','=',mo['Quantite']],['gent_oe_mo_line_id','=',id_line.id]])):
+		# 				print "BDE_composant existant"
+		# 			else:
+		# 				self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':mo['Prix Unitaire'],'product_uom_qty':mo['Quantite'],'gent_oe_mo_line_id':id_line.id})
+
+
 	def strip_accents(self, text):
 		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')
 
