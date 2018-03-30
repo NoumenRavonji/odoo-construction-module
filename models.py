@@ -582,9 +582,11 @@ class OuvrageElementaire(models.Model):
 		a=list()
 		d=dict()
 		c=0
+		# if (ws.cell(row=1,column=1).value == None):
 		for row in ws:
+			if(row[0].value=="DESIGNATION" and row[2].value==None):
+				d = {}
 			if(row[0].value=="DESIGNATION" and row[2].value!=None):
-
 				d={}
 				key=str()
 				d['nom_section']=row[2].value
@@ -618,6 +620,62 @@ class OuvrageElementaire(models.Model):
 				continue
 			else:
 				a.append(d)
+		# if(ws.cell(row=1,column=1).value == "N DE PRIX:001"):
+		# 	print "Vos"
+		# 	for row in ws:
+		# 		if(row[0].value=="N DE PRIX:001"):
+		# 				d={}
+		# 				cle=str()
+		# 				d['nom_section']=row[1].value
+		# 				d['MATERIAUX']=list()
+		# 				d['MATERIELS']=list()
+		# 				d['MO']=list()
+		# 				# d['rendement']=0
+		# 		if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
+		# 			continue
+		# 		if(row[0].value=="MATERIAUX"):
+		# 			cle='MATERIAUX'
+		# 			continue
+		# 		if(row[0].value=="MATERIELS"):
+		# 			cle='MATERIELS'
+		# 			continue
+
+				
+		# 		if(row[0].value != None):
+		# 			if((row[0].value == "MAIN D'OEUVRE") or (row[0].value.encode('ascii', 'xmlcharrefreplace') == "MAIN D'&#338;UVRE" )):
+		# 				cle='MO'
+		# 				continue
+		# 		if(row[0].value==None):
+		# 			if(row[3].value==None):
+		# 				continue	
+		# 			else:
+		# 				row[0].value=cle+'-'+d['nom_section']
+		# 		if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
+		# 			# cle=str()
+		# 			continue
+		# 		if(row[0].value=='Coeficient K='):
+		# 			continue
+		# 		# if(row[0].value=="Rendement R="):
+		# 		# 	d['rendement']=row[1].value
+		# 		# 	cle=""
+		# 			continue
+		# 		if(row[2].value==None and row[3].value==None):
+		# 			continue
+		# 		if(row[1].value==None):
+		# 			row[1].value='u'
+		# 		# if(row[1].value==None):
+		# 		# 	continue
+		# 		try:
+		# 			d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
+		# 		except KeyError:
+		# 			pass
+				
+		# 		# Insertion de la section dans la liste
+		# 		if(d in a):
+		# 			continue
+		# 		else:
+		# 			a.append(d)
+
 		for ouvrage in a:
 			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
 				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
