@@ -55,6 +55,31 @@
 				                              </tree>
 
                         				</field> 
+                        			<label for="epi_line"/>
+				                        <field name="epi_line" widget="one2many_list" >
+				                              <tree string="Détails EPI" editable="bottom">
+				                                <field name="product_id" domain="[('gent_type', '=', 'epi')]"/>
+				                                <field name="product_uom" />
+				                                <field name="product_uom_qty" />
+				                                <field name="price_unit" />
+				                                <field name="price_subtotal" />
+
+				                              </tree>
+
+                        				</field> 
+                        				
+                        			<label for="autres_charges_line"/>
+				                        <field name="autres_charges_line" widget="one2many_list" >
+				                              <tree string="Détails autres charges" editable="bottom">
+				                                <field name="product_id" domain="[('gent_type', '=', 'autres_charges')]"/>
+				                                <field name="product_uom" />
+				                                <field name="product_uom_qty" />
+				                                <field name="price_unit" />
+				                                <field name="price_subtotal" />
+
+				                              </tree>
+
+                        				</field> 
                         
                                 </form>
             
