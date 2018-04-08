@@ -9,7 +9,6 @@
                 <xpath expr="//field[@name='sale_ok']" position="before">
                     <label for="gent_category" string="Categorie d'article"/>
                     <field name="gent_category" string="Type"/>
-                    <script type="text/javascript" src="/static/src/js/form_widgets.js"></script>
                 </xpath>
             </field>
         </record>
