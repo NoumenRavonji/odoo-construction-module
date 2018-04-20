@@ -12,6 +12,10 @@ from tempfile import TemporaryFile
 import openpyxl
 from openpyxl.utils import coordinate_from_string, column_index_from_string
 import unicodedata
+from openerp import http
+from openerp.http import request
+from openerp.addons.web.controllers.main import serialize_exception,content_disposition
+
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -201,6 +205,8 @@ class Bde(models.Model):
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=True)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 	is_bde = fields.Boolean("BDE", default=True)
+	excel_devis = fields.Binary(string='Excel File', store=True)
+
 	# state= fields.Selection([
 	# 		('bde', 'BDE'),
  #            ('draft', 'Draft Quotation'),
@@ -227,8 +233,6 @@ class Bde(models.Model):
 		self.is_bde= False
 		return True
 
-	
-	
 	@api.one
 	@api.onchange('order_line')
 	def on_change_order_line(self):
@@ -392,7 +396,94 @@ class Bde(models.Model):
 				
 		self.order_line = result
 
+	
+	@api.multi
+	def import_excel_devis(self):
+		print "IMPORT EXCEL DEVIS"
+		my_file = self.excel_devis.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+		start = False
+		sections =[]
+		self.rubrique_line_ids = []
+		rubrique =""
+		lines = []
+		start_line =False
+		for row in ws:
+			val1 = row[0].value
+			val2 = row[1].value
+			val3 = row[2].value
+			val4 = row[3].value
+			val5 = row[4].value
+			val6 = row[4].value
+			if(val1 =="REF"):
+				start = True
+				continue
+			if(start):
+				print "start"
 
+				# SECTION
+
+				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
+
+					if(len(lines) > 0):
+						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+						lines =[]
+						start_line = False
+					start_line = True
+
+					if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
+						sale_layout_cat_id = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).id
+					else:
+						sale_layout_cat_id = val1
+
+					
+
+				# ADDING SECTION LINES
+				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+					# ouvrage elementaire
+					if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+						print "product exist"
+					else:
+						print "create product"
+						print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
+						self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
+						self.env['sale.order.line'].create({'name': val2, 'order_partner_id': 13, 'order_id':46})
+
+					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
+
+					# unite
+					if(self.env['product.uom'].search([['name', "=",val3]])):
+						print "uom exist"
+					else:
+						self.env['product.uom'].create({'name': val3, 'category_id': 1})
+
+					product_uom = self.env['product.uom'].search([['name', "=",val3]])
+
+					# qté
+					print "VALEURS"
+					print val2
+					print val3
+					print val4
+					product_qty = float(val4)
+					if(product_qty > 0):
+						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_qty": product_qty})
+						print "LINE OK"
+						print line
+						lines.append(line)
+
+		print "SECTIONS"
+		print sections
+		self.rubrique_line_ids = sections
+
+
+	
+		pass
 
 	@api.one
 	def button_dummy(self, vals):
@@ -583,7 +674,25 @@ class BdeLine(models.Model):
 class OuvrageElementaire(models.Model):
 	_name = "gent.ouvrage.elementaire.import"
 	excel_file = fields.Binary(string='Excel File')
+	# example_file = fields.Binary(string='File')
 
+	# @api.multi
+	def _get_default_image(self,cr,uid,context=None):
+		attach_obj = self.pool.get('ir.attachment')
+		attach_data_ids=attach_obj.search(cr,uid,[('name','=','Gent_ouvrage_modele')])
+		attach_data = attach_obj.browse(cr,uid,attach_data_ids)
+		print "Ito eh"
+		print attach_data_ids
+		return attach_data.datas
+	_defaults={'excel_file': _get_default_image}
+	# _columns = {
+	# 	'excel_file' : fields.binary('Welcome Letter'),
+	# }
+	# _defaults={
+	# 	'excel_file' : _get_default_welcome_letter 
+	# }
+
+	
 	@api.multi
 	def import_excel(self):
 		print "IMPORT EXCEL"
@@ -984,7 +1093,7 @@ class OuvrageElementaire(models.Model):
 
 
 	def strip_accents(self, text):
-		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')
+		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')                    
 
 	
 class OuvrageElementaire(models.Model):
@@ -1120,7 +1229,28 @@ class OuvrageElementaire(models.Model):
 				print col.value
 		return True
 
-
+# class Binary(http.Controller):
+# 	@http.route('/datas', type='http', auth="public")
+# 	@serialize_exception
+# 	def download_document(self,model,field,id,filename=None, **kw):
+# 		""" Download link for files stored as binary fields.
+# 		:param str model: name of the model to fetch the binary from
+# 		:param str field: binary field
+# 		:param str id: id of the record from which to fetch the binary
+# 		:param str filename: field holding the file's name, if any
+# 		:returns: :class:`werkzeug.wrappers.Response`
+# 		"""
+# 		Model = request.registry[model]
+# 		cr, uid, context = request.cr, request.uid, request.context
+# 		fields = [field]
+# 		res = Model.read(cr, uid, [int(id)], fields, context)[0]
+# 		filecontent = base64.b64decode(res.get(field) or '')
+# 		if not filecontent:
+# 			return request.not_found()
+# 		else:
+# 			if not filename:
+# 				filename = '%s_%s' % (model.replace('.', '_'), id)
+# 				return request.make_response(filecontent,[('Content-Type', 'application/octet-stream'),('Content-Disposition', content_disposition(filename))]) 
 
 class Coeff(models.Model):
 	_name="gent.coeff"

@@ -8,6 +8,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='partner_id']" position="before">
                     <field name="avantmetre" string="Avant-métré"/>
+                    <field name="excel_devis" />
+                    <button name="import_excel_devis" string="Importer" type="object"  />
                 </xpath>
 
                  <xpath expr="//header" position="replace">
@@ -30,6 +32,7 @@
                         <button name="action_cancel" states="manual,progress"   string="Cancel Order" type="object" groups="base.group_user"/>
                         <button name="invoice_cancel" states="invoice_except"  string="Cancel Order" groups="base.group_user"/>
                         <field name="state" widget="statusbar"  attrs="{'invisible': [('is_bde', '=', 0)]}" statusbar_visible="draft,sent,progress,done" statusbar_colors='{"invoice_except":"red","waiting_date":"blue"}'  />
+                        
                 </header>
                 </xpath>
 
@@ -87,6 +90,7 @@
                                             
                                             <field name="address_allotment_id"/>
                                         </group>
+                                        
                                     </group>
 
 
