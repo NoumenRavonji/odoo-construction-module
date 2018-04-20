@@ -7,8 +7,8 @@
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='sale_ok']" position="before">
-                    <label for="gent_type" string="Type de produit"/>
-                    <field name="gent_type" string="Type" gent_type='chantier'/>
+                    <label for="gent_category" string="Categorie d'article"/>
+                    <field name="gent_category" string="Type"/>
                 </xpath>
             </field>
         </record>

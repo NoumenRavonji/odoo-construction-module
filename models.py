@@ -183,7 +183,18 @@ class AvantMetreLine(models.Model):
 class Product2(models.Model):
 	_inherit = "product.template"
 
-	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre')])
+	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre'),('epi','EPI'),('autres_charges','Autres charges')])
+	gent_category = fields.Many2one(comodel_name='product.category', required=True,default=1)
+	@api.onchange('gent_category')
+	def on_change_gent_category(self):
+		print "Gent type CHANGE"
+		self.categ_id = self.gent_category.id
+		print self.gent_category.id
+		# categ = self.browse(cr,uid,ids[0]).
+		# categ_val=dict(self._columns['product_template'].selection).get(gent_type)
+		for rec in self:
+			# self.categ_id = rec.categ_id
+			print rec.id
 
 class Bde(models.Model):
 	_inherit = "sale.order"
@@ -372,7 +383,7 @@ class Bde(models.Model):
 				try:
 					for i in range (0,len(vals['order_line'][k][2]['materiel_line'])):
 						if(len(vals['order_line'][k][2]['materiel_line'][i][2])!=0):
-						# print (vals['order_line'][k][2]['materiel_line'][i][2]['product_id'])
+							print (vals['order_line'][k][2]['materiel_line'][i][2]['product_id'])
 							mll=vals['order_line'][k][2]['materiel_line'][i][2]['product_id']
 							self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiel'})
 				except:
@@ -380,7 +391,7 @@ class Bde(models.Model):
 				try:
 					for i in range (0,len(vals['order_line'][k][2]['materiaux_line'])):
 						if(len(vals['order_line'][k][2]['materiaux_line'][i][2])!=0):
-						# print (vals['order_line'][k][2]['materiaux_line'][i][2]['product_id'])
+							print (vals['order_line'][k][2]['materiaux_line'][i][2]['product_id'])
 							ml=vals['order_line'][k][2]['materiaux_line'][i][2]['product_id']
 							self.pool.get('product.template').browse(cr,uid,ml).write({'gent_type': 'composant_materiaux'})
 				except:
@@ -388,9 +399,11 @@ class Bde(models.Model):
 				try:
 					for i in range (0,len(vals['order_line'][0][2]['mo_line'])):
 						if(len(vals['order_line'][k][2]['mo_line'][i][2])!=0):
-						# print (vals['order_line'][k][2]['mo_line'][i][2]['product_id'])
+							print (vals['order_line'][k][2]['mo_line'][i][2]['product_id'])
 							mo=vals['order_line'][k][2]['mo_line'][i][2]['product_id']
 							self.pool.get('product.template').browse(cr,uid,mo).write({'gent_type': 'composant_main_d_oeuvre'})
+							# self.pool.get('product.template').browse(cr,uid,mo).write({'categ_id':10})
+							# self.pool.get('product.template').browse(cr,uid,mo).write({'gent_category':10})
 				except:
 					print ("no mo line")
 		except:
@@ -428,6 +441,7 @@ class Bde(models.Model):
 							if vals['order_line'][i][2]['materiaux_line'][k][2] != False:
 								mll = vals['order_line'][i][2]['materiaux_line'][k][2]['product_id']
 								self.pool.get('product.template').browse(cr,uid,mll).write({'gent_type': 'composant_materiaux'})
+
 					except:
 						print("aucune modification materiaux_line")
 					try:
@@ -502,6 +516,8 @@ class GentSaleOrderLine(models.Model):
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute="_compute_oe_pu")
 
 	mo_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre")
+	autres_charges_line = fields.One2many('gent.bde.composant', 'gent_mo_order_line_id', "Main d'oeuvre")
+	epi_line = fields.One2many('gent.bde.composant', 'gent_epi_order_line_id', "EPI")
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels")
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux")
 
@@ -637,13 +653,19 @@ class GentSaleOrderLine(models.Model):
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
 
-	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
-	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
-	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
 
-	gent_oe_mo_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
-	gent_oe_materiel_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
-	gent_oe_materaux_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_autres_charges_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_epi_order_line_id = fields.Many2one('sale.order.line','Parent Order Line' , ondelete='restrict',select=True, readonly=True)
+
+	gent_oe_mo_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_oe_materiel_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_oe_materaux_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_oe_epi_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_oe_autres_charges_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='cascade', required=True)
 	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'))
@@ -683,9 +705,11 @@ class OuvrageElementaire(models.Model):
 		a=list()
 		d=dict()
 		c=0
+		# if (ws.cell(row=1,column=1).value == None):
 		for row in ws:
+			if(row[0].value=="DESIGNATION" and row[2].value==None):
+				d = {}
 			if(row[0].value=="DESIGNATION" and row[2].value!=None):
-
 				d={}
 				key=str()
 				d['nom_section']=row[2].value
@@ -719,6 +743,62 @@ class OuvrageElementaire(models.Model):
 				continue
 			else:
 				a.append(d)
+		# if(ws.cell(row=1,column=1).value == "N DE PRIX:001"):
+		# 	print "Vos"
+		# 	for row in ws:
+		# 		if(row[0].value=="N DE PRIX:001"):
+		# 				d={}
+		# 				cle=str()
+		# 				d['nom_section']=row[1].value
+		# 				d['MATERIAUX']=list()
+		# 				d['MATERIELS']=list()
+		# 				d['MO']=list()
+		# 				# d['rendement']=0
+		# 		if row[0].value in ['TOTAL MATERIAUX','TOTAL MATERIELS','DESIGNATION']:
+		# 			continue
+		# 		if(row[0].value=="MATERIAUX"):
+		# 			cle='MATERIAUX'
+		# 			continue
+		# 		if(row[0].value=="MATERIELS"):
+		# 			cle='MATERIELS'
+		# 			continue
+
+				
+		# 		if(row[0].value != None):
+		# 			if((row[0].value == "MAIN D'OEUVRE") or (row[0].value.encode('ascii', 'xmlcharrefreplace') == "MAIN D'&#338;UVRE" )):
+		# 				cle='MO'
+		# 				continue
+		# 		if(row[0].value==None):
+		# 			if(row[3].value==None):
+		# 				continue	
+		# 			else:
+		# 				row[0].value=cle+'-'+d['nom_section']
+		# 		if(row[0].value=="TOTAL MAIN D\'OEUVRE"):
+		# 			# cle=str()
+		# 			continue
+		# 		if(row[0].value=='Coeficient K='):
+		# 			continue
+		# 		# if(row[0].value=="Rendement R="):
+		# 		# 	d['rendement']=row[1].value
+		# 		# 	cle=""
+		# 			continue
+		# 		if(row[2].value==None and row[3].value==None):
+		# 			continue
+		# 		if(row[1].value==None):
+		# 			row[1].value='u'
+		# 		# if(row[1].value==None):
+		# 		# 	continue
+		# 		try:
+		# 			d[cle].append({'Designation':row[0].value,'Unite':row[1].value,'Quantite':row[2].value,'Prix Unitaire':row[3].value})
+		# 		except KeyError:
+		# 			pass
+				
+		# 		# Insertion de la section dans la liste
+		# 		if(d in a):
+		# 			continue
+		# 		else:
+		# 			a.append(d)
+
 		for ouvrage in a:
 			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
 				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
@@ -733,6 +813,13 @@ class OuvrageElementaire(models.Model):
 			print ouvrage['nom_section'], ":",id_line.id
 
 			for materiaux in ouvrage['MATERIAUX']:
+				if(self.env['product.category'].search([('name','=',"Composant Materiaux")])):
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant Materiaux")]).id
+					# print id_unit_mo
+				else:
+					# print "unite qui n'existe pas encore"
+					self.env['product.category'].create({'name':"Composant Materiaux"})
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant Materiaux")]).id
 				print "MATERIAUX ",materiaux['Designation']
 				if materiaux['Unite'] == 'u':
 					materiaux['Unite']='Unité(s)'
@@ -751,7 +838,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiaux['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux'})
+					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux','categ_id':id_gent_category,'gent_category':id_gent_category})
 				id_mo = self.env['product.product'].search([('name','=',materiaux['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -762,7 +849,14 @@ class OuvrageElementaire(models.Model):
 				else:
 					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiaux['Prix Unitaire'],'product_uom_qty':materiaux['Quantite'],'gent_oe_materaux_id':id_line.id})
 			for materiel in ouvrage['MATERIELS']:
-
+				# id_gent_category = self.env['product.category'].search([('name','=',"Composant Materiel")]).id
+				if(self.env['product.category'].search([('name','=',"Composant Materiel")])):
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant Materiel")]).id
+					# print id_unit_mo
+				else:
+					# print "unite qui n'existe pas encore"
+					self.env['product.category'].create({'name':"Composant Materiel"})
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant Materiel")]).id
 				if materiel['Unite'] == 'u':
 					materiel['Unite']='Unité(s)'
 				elif materiel['Unite'] == 'l':
@@ -780,7 +874,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiel['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel'})
+					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel','categ_id':id_gent_category,'gent_category':id_gent_category})
 				id_mo = self.env['product.product'].search([('name','=',materiel['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -791,6 +885,14 @@ class OuvrageElementaire(models.Model):
 				else:
 					self.env['gent.bde.composant'].create({'product_id':id_mo,'product_uom':id_unit_mo,'price_unit':materiel['Prix Unitaire'],'product_uom_qty':materiel['Quantite'],'gent_oe_materiel_id':id_line.id})
 			for mo in ouvrage['MO']:
+				if(self.env['product.category'].search([('name','=',"Composant main d'oeuvre")])):
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant main d'oeuvre")]).id
+					# print id_unit_mo
+				else:
+					# print "unite qui n'existe pas encore"
+					self.env['product.category'].create({'name':"Composant main d'oeuvre"})
+					id_gent_category = self.env['product.category'].search([('name','=',"Composant main d'oeuvre")]).id
+				# id_gent_category = self.env['product.category'].search([('name','=',"Composant main d'oeuvre")]).id
 				print "MO ",mo['Designation']
 				if mo['Unite'] in ['','u','u ']:
 					mo['Unite']='Unité(s)'
@@ -809,7 +911,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',mo['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre'})
+					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre','categ_id':id_gent_category,'gent_category':id_gent_category})
 				id_mo = self.env['product.product'].search([('name','=',mo['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
@@ -998,6 +1100,8 @@ class OuvrageElementaire(models.Model):
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute='_compute_oe_pu')
 
 	mo_line = fields.One2many('gent.bde.composant', 'gent_oe_mo_line_id', "Main d'oeuvre", copy=True)
+	autres_charges_line = fields.One2many('gent.bde.composant', 'gent_oe_autres_charges_line_id', "Autres charges", copy=True)
+	epi_line = fields.One2many('gent.bde.composant', 'gent_oe_epi_line_id', "EPI", copy=True)
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_oe_materiel_id', "Matériels", copy=True)
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_oe_materaux_id', "Matériaux", copy=True)
 	price_unit= fields.Float('Unit Price', store=True, readonly=True)
