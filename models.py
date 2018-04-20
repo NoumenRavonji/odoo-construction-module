@@ -12,14 +12,11 @@ from tempfile import TemporaryFile
 import openpyxl
 from openpyxl.utils import coordinate_from_string, column_index_from_string
 import unicodedata
-<<<<<<< HEAD
 from openerp import http
 from openerp.http import request
 from openerp.addons.web.controllers.main import serialize_exception,content_disposition
-
-=======
 from openerp.addons.sale.sale import sale_order 
->>>>>>> 60c801395075fcb368e9fd061b91be6ed6cc2294
+
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -209,6 +206,8 @@ class Bde(models.Model):
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=False)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 	is_bde = fields.Boolean("BDE", default=True)
+	# excel_devis = fields.Binary(string='Devis en Excel', store=True)
+	
 	state= fields.Selection([
 			('bde', 'BDE'),
             ('draft', 'Draft Quotation'),
@@ -224,93 +223,93 @@ class Bde(models.Model):
               \nThe exception status is automatically set when a cancel operation occurs \
               in the invoice validation (Invoice Exception) or in the picking list process (Shipping Exception).\nThe 'Waiting Schedule' status is set when the invoice is confirmed\
                but waiting for the scheduler to run on the order date.", select=True, default="bde")
-	excel_devis = fields.Binary(string='Devis en Excel', store=True)
+	
 
-	@api.multi
-	def import_excel_devis(self):
-		print "IMPORT EXCEL DEVIS"
-		my_file = self.excel_devis.decode('base64')
-		excel_fileobj = TemporaryFile('wb+')
-		excel_fileobj.write(my_file)
-		excel_fileobj.seek(0)
-		# Create workbook
-		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
-		# Get the first sheet of excel file
-		ws = wb[wb.get_sheet_names()[0]]
-		start = False
-		sections =[]
-		self.rubrique_line_ids = []
-		rubrique =""
-		lines = []
-		start_line =False
-		for row in ws:
-			val1 = row[0].value
-			val2 = row[1].value
-			val3 = row[2].value
-			val4 = row[3].value
-			val5 = row[4].value
-			val6 = row[5].value
-			if(val1 =="REF"):
-				start = True
-				continue
-			if(start):
-				print "start"
+	# @api.multi
+	# def import_excel_devis(self):
+	# 	print "IMPORT EXCEL DEVIS"
+	# 	my_file = self.excel_devis.decode('base64')
+	# 	excel_fileobj = TemporaryFile('wb+')
+	# 	excel_fileobj.write(my_file)
+	# 	excel_fileobj.seek(0)
+	# 	# Create workbook
+	# 	wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+	# 	# Get the first sheet of excel file
+	# 	ws = wb[wb.get_sheet_names()[0]]
+	# 	start = False
+	# 	sections =[]
+	# 	self.rubrique_line_ids = []
+	# 	rubrique =""
+	# 	lines = []
+	# 	start_line =False
+	# 	for row in ws:
+	# 		val1 = row[0].value
+	# 		val2 = row[1].value
+	# 		val3 = row[2].value
+	# 		val4 = row[3].value
+	# 		val5 = row[4].value
+	# 		val6 = row[5].value
+	# 		if(val1 =="REF"):
+	# 			start = True
+	# 			continue
+	# 		if(start):
+	# 			print "start"
 
-				# SECTION
+	# 			# SECTION
 
-				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
+	# 			if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
 
-					# if(len(lines) > 0):
-					# 	sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
-					# 	lines =[]
-					# 	start_line = False
-					start_line = True
+	# 				# if(len(lines) > 0):
+	# 				# 	sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+	# 				# 	lines =[]
+	# 				# 	start_line = False
+	# 				start_line = True
 
-					if(self.env['sale_layout.category'].search([['name','=',val1]]) == False):
-						self.env['sale_layout.category'].create({'name': val1})
+	# 				if(self.env['sale_layout.category'].search([['name','=',val1]]) == False):
+	# 					self.env['sale_layout.category'].create({'name': val1})
 
-					rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
+	# 				rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
 
 					
 
-				# ADDING SECTION LINES
-				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
-					# lines
+	# 			# ADDING SECTION LINES
+	# 			if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+	# 				# lines
 					
-					if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
-						print "product exist"
-					else:
-						print "create product"
-						print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
-						self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
+	# 				if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+	# 					print "product exist"
+	# 				else:
+	# 					print "create product"
+	# 					print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
+	# 					self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
 
-					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
+	# 				product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
 
-					# unite
-					if(self.env['product.uom'].search([['name', "=",val3]])):
-						print "uom exist"
-					else:
-						self.env['product.uom'].create({'name': val3, 'category_id': 1})
+	# 				# unite
+	# 				if(self.env['product.uom'].search([['name', "=",val3]])):
+	# 					print "uom exist"
+	# 				else:
+	# 					self.env['product.uom'].create({'name': val3, 'category_id': 1})
 
-					product_uom = self.env['product.uom'].search([['name', "=",val3]])
+	# 				product_uom = self.env['product.uom'].search([['name', "=",val3]])
 
-					# qté
+	# 				# qté
 		
-					product_qty = float(val4)
-					print "HERE"
-					print rubrique
-					print val4
-					print product_qty
-					if(product_qty > 0):
-						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": val5, "prix_debourse": val5, "sale_layout_cat_id": rubrique})
-						print "LINE OK"
-						print line
-						lines.append(line)
+	# 				product_qty = float(val4)
+	# 				print "HERE"
+	# 				print rubrique
+	# 				print val4
+	# 				print product_qty
+	# 				if(product_qty > 0):
+	# 					line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": val5, "prix_debourse": val5, "sale_layout_cat_id": rubrique})
+	# 					print "LINE OK"
+	# 					print line
+	# 					lines.append(line)
 
-		# print lines
-		self.order_line = lines
+	# 	# print lines
+	# 	self.order_line = lines
 
-		pass
+	# 	pass
 
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
 		value = {
@@ -1224,7 +1223,7 @@ class OuvrageElementaire(models.Model):
 
 	@api.multi
 	def import_excel(self):
-		print "IMPORT EXCEL"
+		print "IMPORT EXCEL OUVRAGE ELEMENTAIRE"
 		# Generating of the excel file to be read by openpyxl
 		my_file = self.excel_file.decode('base64')
 		excel_fileobj = TemporaryFile('wb+')
