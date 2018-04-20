@@ -24,7 +24,8 @@
                 'mrp',
                 'sale_layout',
                 'sale',
-                'product'
+                'product',
+                'project'
     ],
 
     # always loaded
@@ -41,7 +42,8 @@
         
         
         'views/facturation/facturation.xml',
-        'datas/test.xlsx'
+        'datas/test.xlsx',
+        'views/project/project.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
