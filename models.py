@@ -72,10 +72,10 @@ class AvantMetre(models.Model):
 						start_line = False
 					start_line = True
 
-					if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
-						rubrique = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).rubrique
-					else:
-						rubrique = val1
+					# if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
+					# 	rubrique = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).rubrique
+					# else:
+					rubrique = val1
 
 					
 
@@ -218,6 +218,16 @@ class Bde(models.Model):
               in the invoice validation (Invoice Exception) or in the picking list process (Shipping Exception).\nThe 'Waiting Schedule' status is set when the invoice is confirmed\
                but waiting for the scheduler to run on the order date.", select=True, default="bde")
 	excel_devis = fields.Binary(string='Devis en Excel', store=True)
+
+	@api.multi
+	def create_project(self):
+		print "create"
+		if(self.project == False):
+			project_id = self.env['project.project'].create({'name': self.avantmetre.name, "partner_id": self.avantmetre.partner_id.id, "state": "open"  })
+			self.project = True
+			for order_line in self.order_line:
+				self.env['project.task'].create({'name': order_line.name, 'project_id': project_id.id})
+
 
 	@api.multi
 	def import_excel_devis(self):

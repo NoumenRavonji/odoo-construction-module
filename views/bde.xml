@@ -21,9 +21,11 @@
 
                  <xpath expr="//button[@name='action_button_confirm']" position="after">
                      <button name="convert_to_devis" states="draft"  attrs="{'invisible': [('state', '!=', 'bde')]}" string="Convertir en devis" type="object"/>
+                     
+                     <!-- <button name="create_project" states="draft" string="Créer projet" type="object"/> -->
                 </xpath>
 
-                 <xpath expr="//group" position="after">
+                <!--  <xpath expr="//group" position="after">
                   
                     <label for="excel_avantmetre" string="Importer Excel"  attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}"/>
                       <div attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}">
@@ -34,7 +36,7 @@
                   
                   
                 </xpath>
-
+ -->
                 <xpath expr="//field[@name='order_line']" position="replace">
                         <field name="order_line">
                                 <form string="Sales Order Lines">
@@ -85,7 +87,7 @@
                                     <field name="name" style="background-color: white;"/>
 
                                     <label for="ouvrage_elementaire"/>
-                                    <field name="ouvrage_elementaire" widget="selection" style="background-color: white;"/>
+                                    <field name="ouvrage_elementaire" style="background-color: white;"/>
 
                                  
                                     <label for="materiaux_line"/>
