@@ -8,10 +8,11 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='partner_id']" position="before">
                     <field name="avantmetre" string="Avant-métré"/>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="excel_devis" />
                     <button name="import_excel_devis" string="Importer" type="object"  />
                 </xpath>
-
 
                  <xpath expr="//header" position="replace">
                     <field name="is_bde" invisible="1" />
@@ -52,8 +53,8 @@
                   
                     <label for="excel_avantmetre" string="Importer Excel"  attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}"/>
                       <div attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}">
-                        <field name="excel_devis" />
-                        <button name="import_excel_devis" string="Importer" type="object"  />
+                        <!-- <field name="excel_devis" /> -->
+                        <!-- <button name="import_excel_devis" string="Importer" type="object"  /> -->
 
                       </div>
                   

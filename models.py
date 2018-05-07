@@ -70,18 +70,18 @@ class AvantMetre(models.Model):
 
 				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
 
+					# if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
+					# 	rubrique = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).rubrique
+					# 	print "NOUS AVONS"
+					# 	print rubrique
+					# else:
+					# 	rubrique = val1
+
 					if(len(lines) > 0):
-						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+						sections.append((0,0,{'rubrique': val1, "rubrique_bom_line_ids": lines}))
 						lines =[]
 						start_line = False
 					start_line = True
-
-					if(self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]])):
-						rubrique = self.env['gent.avantmetre.rubrique'].search([['rubrique','=',val1]]).rubrique
-					else:
-						rubrique = val1
-
-					
 
 				# ADDING SECTION LINES
 				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
@@ -90,12 +90,21 @@ class AvantMetre(models.Model):
 						print "product exist"
 					else:
 						print "create product"
-						print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
-						self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
+						if(self.env['product.template'].search([['name','=', val2],['gent_type','=','ouvrage_elementaire']])):
+							print "product exists in product"
+						else:
+							self.env['product.template'].create({'name':val2, 'gent_type':'ouvrage_elementaire'})
+					product_id = self.env['product.product'].search([['name',"=",val2]]).id
+					print "PRODUCT ID"
+					print product_id
+					print val2
+		# 				self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
 
-					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
-
-					# unite
+					
+		# 			# print "PRODUCT ID"
+		# 			# print product_id
+		# 			# print val2
+		# 			# unite
 					if(self.env['product.uom'].search([['name', "=",val3]])):
 						print "uom exist"
 					else:
@@ -118,10 +127,52 @@ class AvantMetre(models.Model):
 		print "SECTIONS"
 		print sections
 		self.rubrique_line_ids = sections
-
-
-	
 		pass
+
+
+		# # ADDING SECTION LINES
+		# 		if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+		# 			# ouvrage elementaire
+		# 			if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+		# 				print "product exist"
+		# 			else:
+		# 				print "create product"
+		# 				self.env['product.product'].create({''})
+		# 				print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
+		# 				product_id = self.env['product.product'].search([['name',"=",val2]]).id
+		# 				print "PRODUCT ID"
+		# 				print product_id
+		# 				print val2
+		# 				self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
+
+					
+		# 			# print "PRODUCT ID"
+		# 			# print product_id
+		# 			# print val2
+		# 			# unite
+		# 			if(self.env['product.uom'].search([['name', "=",val3]])):
+		# 				print "uom exist"
+		# 			else:
+		# 				self.env['product.uom'].create({'name': val3, 'category_id': 1})
+
+		# 			product_uom = self.env['product.uom'].search([['name', "=",val3]])
+
+		# 			# qté
+		# 			print "VALEURS"
+		# 			print val2
+		# 			print val3
+		# 			print val4
+		# 			product_qty = float(val4)
+		# 			if(product_qty > 0):
+		# 				line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_qty": product_qty})
+		# 				print "LINE OK"
+		# 				print line
+		# 				lines.append(line)
+
+		# print "SECTIONS"
+		# print sections
+		# self.rubrique_line_ids = sections
+		# pass
 
 	@api.multi
 	def strip_accents(self, text):
@@ -206,7 +257,7 @@ class Bde(models.Model):
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=False)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 	is_bde = fields.Boolean("BDE", default=True)
-	# excel_devis = fields.Binary(string='Devis en Excel', store=True)
+	excel_devis = fields.Binary(string='Devis en Excel', store=True)
 	
 	state= fields.Selection([
 			('bde', 'BDE'),
@@ -225,91 +276,111 @@ class Bde(models.Model):
                but waiting for the scheduler to run on the order date.", select=True, default="bde")
 	
 
-	# @api.multi
-	# def import_excel_devis(self):
-	# 	print "IMPORT EXCEL DEVIS"
-	# 	my_file = self.excel_devis.decode('base64')
-	# 	excel_fileobj = TemporaryFile('wb+')
-	# 	excel_fileobj.write(my_file)
-	# 	excel_fileobj.seek(0)
-	# 	# Create workbook
-	# 	wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
-	# 	# Get the first sheet of excel file
-	# 	ws = wb[wb.get_sheet_names()[0]]
-	# 	start = False
-	# 	sections =[]
-	# 	self.rubrique_line_ids = []
-	# 	rubrique =""
-	# 	lines = []
-	# 	start_line =False
-	# 	for row in ws:
-	# 		val1 = row[0].value
-	# 		val2 = row[1].value
-	# 		val3 = row[2].value
-	# 		val4 = row[3].value
-	# 		val5 = row[4].value
-	# 		val6 = row[5].value
-	# 		if(val1 =="REF"):
-	# 			start = True
-	# 			continue
-	# 		if(start):
-	# 			print "start"
+	@api.multi
+	def import_excel_devis(self):
+		print "IMPORT EXCEL DEVIS"
+		my_file = self.excel_devis.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+		start = False
+		sections =[]
+		aide = []
+		self.order_line = []
+		rubrique =""
+		lines = []
+		start_line =False
+		for row in ws:
+			val1 = row[0].value
+			val2 = row[1].value
+			val3 = row[2].value
+			val4 = row[3].value
+			val5 = row[4].value
+			val6 = row[5].value
+			if(val1 =="REF"):
+				start = True
+				continue
+			if(start):
+				print "start"
 
-	# 			# SECTION
+				# SECTION
 
-	# 			if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
-
-	# 				# if(len(lines) > 0):
-	# 				# 	sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
-	# 				# 	lines =[]
-	# 				# 	start_line = False
-	# 				start_line = True
-
-	# 				if(self.env['sale_layout.category'].search([['name','=',val1]]) == False):
-	# 					self.env['sale_layout.category'].create({'name': val1})
-
-	# 				rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
-
+				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
+					print ".HERE WE ARE"
+					if(self.env['sale_layout.category'].search([['name','=',val1]])):
+						# rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
+						print "CATEGORY EXISTS"
+						# print rubrique
+					else:
+						self.env['sale_layout.category'].create({'name': val1})
 					
-
-	# 			# ADDING SECTION LINES
-	# 			if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
-	# 				# lines
+					rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
 					
-	# 				if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
-	# 					print "product exist"
-	# 				else:
-	# 					print "create product"
-	# 					print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
-	# 					self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
+					if(len(lines) > 0):
+						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+						lines =[]
+						start_line = False
+					start_line = True
 
-	# 				product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
+					# print rubrique	
 
-	# 				# unite
-	# 				if(self.env['product.uom'].search([['name', "=",val3]])):
-	# 					print "uom exist"
-	# 				else:
-	# 					self.env['product.uom'].create({'name': val3, 'category_id': 1})
+				# ADDING SECTION LINES
+				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+					# lines
+					
+					if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+						print "product exist"
+					else:
+						print "create product"
+						if(self.env['product.template'].search([['name','=', val2],['gent_type','=','ouvrage_elementaire']])):
+							print "product exists in product"
+						else:
+							self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
 
-	# 				product_uom = self.env['product.uom'].search([['name', "=",val3]])
+					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
+					# print product_id
+					# unite
+					if(self.env['product.uom'].search([['name', "=",val3]])):
+						print "uom exist"
+					else:
+						self.env['product.uom'].create({'name': val3, 'category_id': 1})
 
-	# 				# qté
+					product_uom = self.env['product.uom'].search([['name', "=",val3]])
+
+					# qté
 		
-	# 				product_qty = float(val4)
-	# 				print "HERE"
-	# 				print rubrique
-	# 				print val4
-	# 				print product_qty
-	# 				if(product_qty > 0):
-	# 					line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": val5, "prix_debourse": val5, "sale_layout_cat_id": rubrique})
-	# 					print "LINE OK"
-	# 					print line
-	# 					lines.append(line)
+					product_qty = float(val4)
 
-	# 	# print lines
-	# 	self.order_line = lines
-
-	# 	pass
+					# print "HERE"
+					# print rubrique
+					# print val4
+					# print product_qty
+					if(product_qty > 0):
+						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": float(val5), "sale_layout_cat_id": rubrique})
+						print "LINE OK"
+						print rubrique
+						# print "prix_debourse"
+						# print val5
+						# print line
+						print "150 VE?"
+						print rubrique
+						# print line
+						lines.append(line)
+						aide.append(line)
+						# print lines
+					print "INTERMEDIAIRE"	
+					# print lines
+				# aide.append(lines)
+					# print aide
+		# self.rubrique_line_ids = sections
+		self.order_line = aide
+		print "tapitra"
+		print aide
+		pass
 
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
 		value = {
@@ -1188,7 +1259,7 @@ class OuvrageElementaire(models.Model):
 
 	excel_file = fields.Binary(string='Excel File')
 
-	@api.one
+	# @api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
 	def _compute_oe_pu(self):
 		somme_mo=0
