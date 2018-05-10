@@ -16,6 +16,7 @@ from openerp import http
 from openerp.http import request
 from openerp.addons.web.controllers.main import serialize_exception,content_disposition
 from openerp.addons.sale.sale import sale_order 
+from openerp import fields
 
 
 class AvantMetre(models.Model):
@@ -1386,7 +1387,7 @@ class GentProject(models.Model):
 	_inherit="project.project"
 	order_id =  fields.Many2one('sale.order', 'Devis', domain=[('state', '!=', 'draft')], change_default=True, ondelete='cascade')
 	tasks = fields.One2many('project.task', 'project_id', "Task Activities")
-
+	pourcentage = fields.Float('pourcentage')
 	@api.onchange('order_id')
 	def on_change_order_id(self):
 		print "ORDER ID CHANGE"
@@ -1445,3 +1446,50 @@ class GentAccount(models.Model):
 
 class GentAccountInvoiceLine(models.Model):
 	_inherit = "account.invoice.line"
+
+class GentAttachement(models.Model):
+	_name = "gent.attachement"
+	# rendement = fields.Float('Rendement',default=1,required=True)
+	excel_file = fields.Binary(string='Excel File')
+	# date_debut = fields.date('Date de debut')
+	# date_confirm = fields.date('Confirmation Date')
+	projet=fields.Many2one('project.project', 'Projet', required=True, select=True)
+	begin_date = fields.Date(required=True)
+	end_date = fields.Date(required=True)
+	excel_pourcentage = fields.Binary(string='Attachement', store=True)
+	pourcentage = fields.Float('Pourcentage')
+
+	@api.onchange('projet')
+	def on_projet(self):
+		print "On change project"
+		
+		print self.projet.order_id.name
+		print "price_list"
+
+	@api.multi
+	def import_percentage(self):
+		print "IMPORT EXCEL pourcentage"
+		my_file = self.excel_pourcentage.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+		start = False
+		sections =[]
+		self.rubrique_line_ids = []
+		rubrique =""
+		lines = []
+		start_line =False
+		for row in ws:
+			val1 = row[0].value
+			val2 = row[1].value
+			val13 = row[12].value
+			if val2 == "TOTAL GENERAL TTC  (en Ariary)":
+				print val13
+				self.projet.order_id.pourcentage = val13*100
+				self.pourcentage = val13*100
+
+	

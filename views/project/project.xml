@@ -15,7 +15,52 @@
             </field>
         </record>
 
+        <!-- <record model="ir.actions.act_window" id="gent_project_edit_action">
+            <field name="name">Attachement</field>
+            <field name="res_model">project.project</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="gent_project_edit"/>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un attachement
+                </p>
+            </field>
+        </record> -->
     	
-        
+
+        <record id="gent_importer_ouvrage_elementaire_form_test" model="ir.ui.view">
+            <field name="name">gent.ouvrage.elementaire.form.import</field>
+            <field name="model">gent.attachement</field>
+            <field name="arch" type="xml">
+                <form string="Test">
+                    <group>
+                        <field name ="projet"/>
+                        <field name="begin_date" string="Début"/>
+                        <field name="end_date" string="Fin"/>
+                        <field name="excel_pourcentage"/>
+                        <field name="pourcentage"/>
+                        <button name="import_percentage" type="object"  string="Importer"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="attachement_action">
+            <field name="name">Attachement</field>
+            <field name="res_model">gent.attachement</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="gent_importer_ouvrage_elementaire_form_test"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Créer un ouvrage élémentaire
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="importer_ouvrage_elementaire_menu_test" name="Attachement" parent="project.menu_project_management"
+                  action="attachement_action"/>
+
+        <!-- <menuitem name="Attachement" id="menu_project_gent_management" parent="project.menu_project_management"
+            sequence="4" action="gent_project_edit_action"/> -->
     </data>
 </openerp>
