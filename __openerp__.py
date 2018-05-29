@@ -39,11 +39,11 @@
         'views/coeff.xml',
         'views/ouvrage_elementaire.xml',
         'views/ouvrage_elementaire_data.xml',
-        
-        
+        'datas/modele.xlsx',
         'views/facturation/facturation.xml',
         'datas/test.xlsx',
-        'views/project/project.xml'
+        'views/project/project.xml',
+        'views/mrp/mrp.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -14,3 +14,5 @@ import unicodedata
 class GentMrpProduction(models.Model):
 	_inherit="mrp.production"
 	
+# class GentAttachement(models.Model):
+# 	_name = "gent.attachement"

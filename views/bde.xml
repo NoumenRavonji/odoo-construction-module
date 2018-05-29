@@ -9,8 +9,34 @@
                 <xpath expr="//field[@name='partner_id']" position="before">
                     <field name="avantmetre" string="Avant-métré"/>
                 </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="excel_devis" />
+                    <button name="import_excel_devis" string="Importer" type="object"  />
+                </xpath>
 
-               
+                 <xpath expr="//header" position="replace">
+                    <field name="is_bde" invisible="1" />
+                    <header>
+                        <button name="invoice_recreate" states="invoice_except" string="Recreate Invoice" groups="base.group_user"/>
+                        <button name="invoice_corrected"  states="invoice_except" string="Ignore Exception" groups="base.group_user"/>
+                        <button name="action_quotation_send" string="Send by Email" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
+                        <button name="action_quotation_send" string="Send by Email" type="object" states="sent,progress,manual" groups="base.group_user"/>
+                        <button name="print_quotation" string="Print" attrs="{'invisible': [('is_bde', '=', True)]}" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
+                        <button name="print_quotation" string="Print" type="object" states="sent,progress,manual" groups="base.group_user"/>
+                        <button name="action_button_confirm" states="draft" attrs="{'invisible': [('is_bde', '=', True)]}" string="Confirm Sale" type="object" groups="base.group_user"/>
+                        <button name="action_button_confirm" states="sent"  string="Confirm Sale" class="oe_highlight" type="object" groups="base.group_user"/>
+                        <button name="action_view_invoice" string="View Invoice" type="object" class="oe_highlight"
+                            attrs="{'invisible': [('invoice_exists', '=', False)]}" groups="base.group_user"/>
+                        <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice"
+                            type="action" states="manual" class="oe_highlight" groups="base.group_user"/>
+                        <button name="copy_quotation" states="cancel" string="New Copy of Quotation" type="object"/>
+                        <button name="cancel" states="draft,sent" string="Cancel Quotation" groups="base.group_user" attrs="{'invisible': [('is_bde', '=', True)]}" />
+                        <button name="action_cancel" states="manual,progress"   string="Cancel Order" type="object" groups="base.group_user"/>
+                        <button name="invoice_cancel" states="invoice_except"  string="Cancel Order" groups="base.group_user"/>
+                        <field name="state" widget="statusbar"  attrs="{'invisible': [('is_bde', '=', 0)]}" statusbar_visible="draft,sent,progress,done" statusbar_colors='{"invoice_except":"red","waiting_date":"blue"}'  />
+                        
+                </header>
+                </xpath>
 
 
 
@@ -29,8 +55,8 @@
                   
                     <label for="excel_avantmetre" string="Importer Excel"  attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}"/>
                       <div attrs="{'invisible': ['|',('avantmetre', '!=', False),('state', '=', 'bde')]}">
-                        <field name="excel_devis" />
-                        <button name="import_excel_devis" string="Importer" type="object"  />
+                         <field name="excel_devis" /> 
+                         <button name="import_excel_devis" string="Importer" type="object"  /> 
 
                       </div>
                   
@@ -66,9 +92,9 @@
                                                 <field name="product_uos_qty" class="oe_inline"/>
                                                 <field name="product_uos" options='{"no_open": True}' class="oe_inline"/>
                                             </div>
-                                            <field name="price_unit" invisible="1"/>
+                                            <field name="price_unit" />
                                             <field name="prix_debourse" />
-                                            <field name="rendement" />
+                                            <field name="price_subtotal" />
                                             <label for="discount" groups="sale.group_discount_per_so_line"/>
                                             <div name="discount" groups="sale.group_discount_per_so_line">
                                                 <field name="discount" class="oe_inline"/>
@@ -80,6 +106,7 @@
                                             
                                             <field name="address_allotment_id"/>
                                         </group>
+                                        
                                     </group>
 
 
@@ -87,7 +114,7 @@
                                     <field name="name" style="background-color: white;"/>
 
                                     <label for="ouvrage_elementaire"/>
-                                    <field name="ouvrage_elementaire" style="background-color: white;"/>
+                                    <field widget="many2many_tags" name="ouvrage_elementaire" style="background-color: white;"/>
 
                                  
                                     <label for="materiaux_line"/>

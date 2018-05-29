@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <!-- window action -->
+        <!--
+            The following tag is an action definition for a "window action",
+            that is an action opening a view or a set of views
+        -->
+        <record id="gent_mrp_bom_form_view" model="ir.ui.view">
+            <field name="name">gent.mrp.bom.form</field>
+            <field name="model">mrp.bom</field>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="arch" type="xml">
+            
+                <xpath expr="//notebook/page[@string='Components']" position="after">
+                        <page string="Main d'oeuvre">
+                            <field name="bom_line_labour_ids" widget="one2many_list">
+                                <tree string="Main d'oeuvre" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" on_change="onchange_product_id(product_id, product_qty)" string="Désignation"/>
+                                    <field name="type" invisible="1"/>
+                                    <field name="product_qty" string="Quantité"/>
+                                    <field name="product_uom" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
+                                   <!--  <field name="product_rounding"/> -->
+                                    <field name="product_efficiency" invisible="1" />
+
+                                    <field name="price_unit"  string="PU"/>
+                                    <field name="price_subtotal" />
+                                   <!--  <field name="date_start"/>
+                                    <field name="date_stop"/> -->
+                                   <!--  <field name="attribute_value_ids" widget="many2many_tags" domain="[('product_ids.product_tmpl_id', '=', parent.product_tmpl_id)]"/>
+                                    <field name="property_ids" widget="many2many_tags"/> -->
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Matériels">
+                            <field name="bom_line_materiel_ids" widget="one2many_list">
+                                <tree string="Matériels" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" on_change="onchange_product_id(product_id, product_qty)" string="Désignation"/>
+                                    <field name="type" invisible="1"/>
+                                    <field name="product_qty" string="Quantité"/>
+                                    <field name="product_uom" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
+                                   <!--  <field name="product_rounding"/> -->
+                                    <field name="product_efficiency" invisible="1" />
+
+                                    <field name="price_unit"  string="PU"/>
+                                    <field name="price_subtotal" />
+                                   <!--  <field name="date_start"/>
+                                    <field name="date_stop"/> -->
+                                   <!--  <field name="attribute_value_ids" widget="many2many_tags" domain="[('product_ids.product_tmpl_id', '=', parent.product_tmpl_id)]"/>
+                                    <field name="property_ids" widget="many2many_tags"/> -->
+                                </tree>
+                            </field>
+                        </page>
+                </xpath>
+
+
+                <xpath expr="//notebook/page[@string='Components']" position="replace">
+                        <page string="Matériaux">
+                            <field name="bom_line_ids" widget="one2many_list">
+                                <tree string="Components" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" on_change="onchange_product_id(product_id, product_qty)"/>
+                                    <field name="type" invisible="1"/>
+                                    <field name="product_qty" string="Quantité"/>
+                                    <field name="product_uom" on_change="onchange_uom(product_id, product_uom)" groups="product.group_uom"/>
+                                   <!--  <field name="product_rounding"/> -->
+                                    <field name="product_efficiency" invisible="1" />
+
+                                    <field name="price_unit"  string="PU"/>
+                                    <field name="price_subtotal" />
+                                   <!--  <field name="date_start"/>
+                                    <field name="date_stop"/> -->
+                                   <!--  <field name="attribute_value_ids" widget="many2many_tags" domain="[('product_ids.product_tmpl_id', '=', parent.product_tmpl_id)]"/>
+                                    <field name="property_ids" widget="many2many_tags"/> -->
+                                </tree>
+                            </field>
+                        </page>
+                </xpath>
+             
+            </field>
+        </record>
+
+
+        <!-- Full id location:
+             action="openacademy.course_list_action"
+             It is not required when it is the same module -->
+    </data>
+</openerp>

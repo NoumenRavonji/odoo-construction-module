@@ -12,7 +12,12 @@ from tempfile import TemporaryFile
 import openpyxl
 from openpyxl.utils import coordinate_from_string, column_index_from_string
 import unicodedata
+from openerp import http
+from openerp.http import request
+from openerp.addons.web.controllers.main import serialize_exception,content_disposition
 from openerp.addons.sale.sale import sale_order 
+from openerp import fields
+
 
 class AvantMetre(models.Model):
 	_inherit = 'mrp.bom'
@@ -61,12 +66,15 @@ class AvantMetre(models.Model):
 				continue
 			if(start):
 				print "start"
+				print val1
 
 				# SECTION
 
 				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
 
 					if(len(lines) > 0):
+						print "here"
+						print val1
 						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
 						lines =[]
 						start_line = False
@@ -100,24 +108,70 @@ class AvantMetre(models.Model):
 					product_uom = self.env['product.uom'].search([['name', "=",val3]])
 
 					# qté
-					print "VALEURS"
-					print val2
-					print val3
-					print val4
+					# print "VALEURS"
+					# print val2
+					# print val3
+					# print val4
 					product_qty = float(val4)
+
 					if(product_qty > 0):
+						print "PRODUCT QUANT"
+						print val1
 						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_qty": product_qty})
 						print "LINE OK"
 						print line
 						lines.append(line)
+					else:
+						print product_qty
 
-		print "SECTIONS"
-		print sections
+
 		self.rubrique_line_ids = sections
-
-
-	
 		pass
+
+
+		# # ADDING SECTION LINES
+		# 		if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
+		# 			# ouvrage elementaire
+		# 			if(self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])):
+		# 				print "product exist"
+		# 			else:
+		# 				print "create product"
+		# 				self.env['product.product'].create({''})
+		# 				print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
+		# 				product_id = self.env['product.product'].search([['name',"=",val2]]).id
+		# 				print "PRODUCT ID"
+		# 				print product_id
+		# 				print val2
+		# 				self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire'})
+
+					
+		# 			# print "PRODUCT ID"
+		# 			# print product_id
+		# 			# print val2
+		# 			# unite
+		# 			if(self.env['product.uom'].search([['name', "=",val3]])):
+		# 				print "uom exist"
+		# 			else:
+		# 				self.env['product.uom'].create({'name': val3, 'category_id': 1})
+
+		# 			product_uom = self.env['product.uom'].search([['name', "=",val3]])
+
+		# 			# qté
+		# 			print "VALEURS"
+		# 			print val2
+		# 			print val3
+		# 			print val4
+		# 			product_qty = float(val4)
+		# 			if(product_qty > 0):
+		# 				line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_qty": product_qty})
+		# 				print "LINE OK"
+		# 				print line
+		# 				lines.append(line)
+
+		# print "SECTIONS"
+		# print sections
+		# self.rubrique_line_ids = sections
+		# pass
 
 	@api.multi
 	def strip_accents(self, text):
@@ -202,6 +256,8 @@ class Bde(models.Model):
 	avantmetre = fields.Many2one(comodel_name='gent.avantmetre', required=False)
 	coeff= fields.Many2one(comodel_name="gent.coeff", string="Coefficient de vente K", store=True)
 	is_bde = fields.Boolean("BDE", default=True)
+	excel_devis = fields.Binary(string='Devis en Excel', store=True)
+	
 	state= fields.Selection([
 			('bde', 'BDE'),
             ('draft', 'Draft Quotation'),
@@ -217,7 +273,7 @@ class Bde(models.Model):
               \nThe exception status is automatically set when a cancel operation occurs \
               in the invoice validation (Invoice Exception) or in the picking list process (Shipping Exception).\nThe 'Waiting Schedule' status is set when the invoice is confirmed\
                but waiting for the scheduler to run on the order date.", select=True, default="bde")
-	excel_devis = fields.Binary(string='Devis en Excel', store=True)
+	
 
 	@api.multi
 	def create_project(self):
@@ -242,7 +298,8 @@ class Bde(models.Model):
 		ws = wb[wb.get_sheet_names()[0]]
 		start = False
 		sections =[]
-		self.rubrique_line_ids = []
+		aide = []
+		self.order_line = []
 		rubrique =""
 		lines = []
 		start_line =False
@@ -262,19 +319,23 @@ class Bde(models.Model):
 				# SECTION
 
 				if((val1 !="") and (val1 !=None) and (val2 ==None) and (val3 ==None) and (val4 ==None) and (val5 ==None) and (val6 ==None)):
-
-					# if(len(lines) > 0):
-					# 	sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
-					# 	lines =[]
-					# 	start_line = False
+					print ".HERE WE ARE"
+					if(self.env['sale_layout.category'].search([['name','=',val1]])):
+						# rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
+						print "CATEGORY EXISTS"
+						# print rubrique
+					else:
+						self.env['sale_layout.category'].create({'name': val1})
+					
+					rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
+					
+					if(len(lines) > 0):
+						sections.append((0,0,{'rubrique': rubrique, "rubrique_bom_line_ids": lines}))
+						lines =[]
+						start_line = False
 					start_line = True
 
-					if(self.env['sale_layout.category'].search([['name','=',val1]]) == False):
-						self.env['sale_layout.category'].create({'name': val1})
-
-					rubrique = self.env['sale_layout.category'].search([['name','=',val1]]).id
-
-					
+					# print rubrique	
 
 				# ADDING SECTION LINES
 				if((val1 !=None) and (val2 !=None) and (val3 !=None) and (val4 !=None) and (val5 !=None) and (val6 !=None)):
@@ -284,11 +345,13 @@ class Bde(models.Model):
 						print "product exist"
 					else:
 						print "create product"
-						print self.env['product.template'].search([['name',"=",val2],['gent_type', '=', 'ouvrage_elementaire']])
-						self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
+						if(self.env['product.template'].search([['name','=', val2],['gent_type','=','ouvrage_elementaire']])):
+							print "product exists in product"
+						else:
+							self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
 
 					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
-
+					# print product_id
 					# unite
 					if(self.env['product.uom'].search([['name', "=",val3]])):
 						print "uom exist"
@@ -300,21 +363,33 @@ class Bde(models.Model):
 					# qté
 		
 					product_qty = float(val4)
-					print "HERE"
-					print rubrique
-					print val4
-					print product_qty
+
+					# print "HERE"
+					# print rubrique
+					# print val4
+					# print product_qty
 					if(product_qty > 0):
-						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": val5, "prix_debourse": val5, "sale_layout_cat_id": rubrique})
+						line = (0,0,{"product_id": product_id, "product_uom": product_uom, "product_uom_qty": product_qty, "prix_unit": float(val5), "sale_layout_cat_id": rubrique})
 						print "LINE OK"
-						print line
+						print rubrique
+						# print "prix_debourse"
+						# print val5
+						# print line
+						print "150 VE?"
+						print rubrique
+						# print line
 						lines.append(line)
-
-		# print lines
-		self.order_line = lines
-
+						aide.append(line)
+						# print lines
+					print "INTERMEDIAIRE"	
+					# print lines
+				# aide.append(lines)
+					# print aide
+		# self.rubrique_line_ids = sections
+		self.order_line = aide
+		print "tapitra"
+		print aide
 		pass
-
 
 	def onchange_pricelist_id(self, cr, uid, ids, pricelist_id, order_lines, context=None):
 		value = {
@@ -326,8 +401,6 @@ class Bde(models.Model):
 	def convert_to_devis(self):
 		self.state= "draft"
 
-	
-	
 	@api.one
 	@api.onchange('order_line')
 	def on_change_order_line(self):
@@ -502,8 +575,6 @@ class Bde(models.Model):
 				
 		self.order_line = result
 
-
-
 	@api.one
 	def button_dummy(self, vals):
 		res = super(Bde, self).button_dummy()
@@ -521,7 +592,7 @@ class Bde(models.Model):
 class GentSaleOrderLine(models.Model):
 	_inherit = "sale.order.line"
 
-	ouvrage_elementaire = fields.Many2one('gent.ouvrage.elementaire', 'Ouvrage élémentaire', store=True)
+	ouvrage_elementaire = fields.Many2many('gent.ouvrage.elementaire', string='Ouvrage élémentaire', store=True)
 
 	prix_debourse = fields.Float('Prix déboursé', store=True, compute="_compute_oe_pu")
 
@@ -531,24 +602,25 @@ class GentSaleOrderLine(models.Model):
 	materiel_line = fields.One2many('gent.bde.composant', 'gent_materiel_order_line_id', "Matériels")
 	materiaux_line = fields.One2many('gent.bde.composant', 'gent_materiaux_order_line_id', "Matériaux")
 
-	rendement = fields.Float('Rendement',default=1,required=True,compute="_compute_rendement")
+	# rendement = fields.Float('Rendement',default=1,required=True)
 	mo_lines_subtotal = fields.Float('Total')
 	price_unit= fields.Float('Unit Price', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True)
 
 	price_subtotal = fields.Float('Montant', digits_compute= dp.get_precision('Product Price'), store=True, readonly=True,compute='_compute_order_line_montant')
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True), ('gent_type', '=', 'ouvrage_elementaire')], change_default=True, readonly=True, states={'draft': [('readonly', False)]}, ondelete='restrict')
-
+	product_uom_qty =fields.Float('Quantity', digits_compute= dp.get_precision('Product UoS'), required=True, readonly=True, states={'draft': [('readonly', False)],'bde': [('readonly', False)]})
+        
 
 	@api.depends('price_unit','product_uom_qty')
 	def _compute_order_line_montant(self):
 		for record in self:
 			record.price_subtotal= record.price_unit * record.product_uom_qty
 
-	@api.depends('ouvrage_elementaire')
-	def _compute_rendement(self):
-		for record in self:
-			record.rendement = record.ouvrage_elementaire.rendement
+	# @api.depends('ouvrage_elementaire')
+	# def _compute_rendement(self):
+	# 	for record in self:
+	# 		record.rendement = record.ouvrage_elementaire.rendement
 	@api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
 	def _compute_oe_pu(self):
@@ -570,32 +642,24 @@ class GentSaleOrderLine(models.Model):
 				somme_materiel += line.price_subtotal
 			for line in record.materiaux_line:
 				somme_materiaux += line.price_subtotal
-		if self.ouvrage_elementaire.rendement == 0:
-			self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
-			self.price_unit = (somme_mo + somme_materiel + somme_materiaux)
-		else:
-			# self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
-			self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
-			self.price_unit = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
+		self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)*self.product_uom_qty
+		self.price_unit = (somme_mo + somme_materiel + somme_materiaux)*self.product_uom_qty
+		# if self.ouvrage_elementaire.rendement == 0:
+		# 	self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
+		# 	self.price_unit = (somme_mo + somme_materiel + somme_materiaux)
+		# else:
+		# 	# self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)
+		# 	self.prix_debourse = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
+		# 	self.price_unit = (somme_mo + somme_materiel + somme_materiaux)/self.ouvrage_elementaire.rendement
 
 		print "BDE PRIX DEBOURSE"
 		print self.prix_debourse
 		print self.price_unit
-		id_ouvrage = self.ouvrage_elementaire.rendement
-		if id_ouvrage != 0:
-			print self.price_unit/id_ouvrage
+		# id_ouvrage = self.ouvrage_elementaire.rendement
+		# if id_ouvrage != 0:
+		# 	print self.price_unit/id_ouvrage
 
-		# somme_mo = 0
-		# somme_materiaux = 0
-		# somme_materiel = 0
-		# for i in vals['order_line'][0][2]['mo_line']:
-		# 	somme_mo += i[2]['price_unit']
-		# for i in vals['order_line'][0][2]['materiaux_line']:
-		# 	somme_materiel += i[2]['price_unit']
-		# for i in vals['order_line'][0][2]['materiel_line']:
-		# 	somme_materiel += i[2]['price_unit']
-		# pu = somme_materiel+somme_mo+somme_materiaux
-		# vals['order_line'][0][2]['price_unit'] = pu
+	
 	def create(self, cr, uid, values, context=None):
 		print "CREATING SALE ORDER"
 		if values.get('order_id') and values.get('product_id') and  any(f not in values for f in ['name', 'price_unit', 'product_uom_qty', 'product_uom']):
@@ -619,62 +683,62 @@ class GentSaleOrderLine(models.Model):
 
 	@api.onchange('ouvrage_elementaire')
 	def on_change_ouvrage_elementaire(self):
-		if(self.ouvrage_elementaire.mo_line):
-			self.mo_line = None
+		print "CHANGE"
+		self.mo_line = []
+		self.materiaux_line = []
+		self.materiel_line = []
+		if(len(self.ouvrage_elementaire) > 0):
 			
-			for line in self.ouvrage_elementaire.mo_line:
-				self.mo_line +=self.mo_line.new({
-						'product_id': line.product_id,
-						'price_unit': line.price_unit,
-						'price_subtotal': line.price_subtotal,
-						'product_uom_qty': line.product_uom_qty,
-						'product_uom': line.product_uom,
-						'gent_mo_order_line_id': self.id
+			for ouvrage in self.ouvrage_elementaire:
+				for line in ouvrage.mo_line:
+					self.mo_line +=self.mo_line.new({
+								'product_id': line.product_id,
+								'price_unit': line.price_unit,
+								'price_subtotal': line.price_subtotal,
+								'product_uom_qty': line.product_uom_qty,
+								'product_uom': line.product_uom,
+								'gent_mo_order_line_id': self.id
 
-					})
-		if(self.ouvrage_elementaire.materiaux_line):
-			for line3 in self.materiaux_line:
-				line3 = False
-			for line in self.ouvrage_elementaire.materiaux_line:
-				self.materiaux_line +=self.materiaux_line.new({
-						'product_id': line.product_id,
-						'price_unit': line.price_unit,
-						'price_subtotal': line.price_subtotal,
-						'product_uom_qty': line.product_uom_qty,
-						'product_uom': line.product_uom,
-						'gent_materiaux_order_line_id': self.id
+							})
+			for ouvrage in self.ouvrage_elementaire:
+				for line in ouvrage.materiaux_line:
+					self.materiaux_line +=self.materiaux_line.new({
+								'product_id': line.product_id,
+								'price_unit': line.price_unit,
+								'price_subtotal': line.price_subtotal,
+								'product_uom_qty': line.product_uom_qty,
+								'product_uom': line.product_uom,
+								'gent_materiaux_order_line_id': self.id
 
-					})
-		if(self.ouvrage_elementaire.materiel_line):
-			for line3 in self.materiaux_line:
-				line3 = False
-			for line in self.ouvrage_elementaire.materiel_line:
-				self.materiel_line +=self.materiel_line.new({
-						'product_id': line.product_id,
-						'price_unit': line.price_unit,
-						'price_subtotal': line.price_subtotal,
-						'product_uom_qty': line.product_uom_qty,
-						'product_uom': line.product_uom,
-						'gent_materiel_order_line_id': self.id
+						})
+			for ouvrage in self.ouvrage_elementaire:
+				for line in ouvrage.materiel_line:
+					self.materiel_line +=self.materiel_line.new({
+								'product_id': line.product_id,
+								'price_unit': line.price_unit,
+								'price_subtotal': line.price_subtotal,
+								'product_uom_qty': line.product_uom_qty,
+								'product_uom': line.product_uom,
+								'gent_materiel_order_line_id': self.id
 
-					})
+							})
 
 
 class BdeLine(models.Model):
 	_name = 'gent.bde.composant'
 
 
-	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_autres_charges_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_epi_order_line_id = fields.Many2one('sale.order.line','Parent Order Line' , ondelete='restrict',select=True, readonly=True)
+	gent_mo_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_autres_charges_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_materiel_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_materiaux_order_line_id = fields.Many2one('sale.order.line', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_epi_order_line_id = fields.Many2one('sale.order.line','Parent Order Line' , ondelete='cascade',select=True, readonly=True)
 
-	gent_oe_mo_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_materiel_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_materaux_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_epi_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
-	gent_oe_autres_charges_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='restrict', select=True, readonly=True)
+	gent_oe_mo_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_oe_materiel_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_oe_materaux_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_oe_epi_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
+	gent_oe_autres_charges_line_id = fields.Many2one('gent.ouvrage.elementaire', 'Parent Order Line',ondelete='cascade', select=True, readonly=True)
 
 
 	product_id =  fields.Many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, ondelete='cascade', required=True)
@@ -696,7 +760,25 @@ class BdeLine(models.Model):
 class OuvrageElementaire(models.Model):
 	_name = "gent.ouvrage.elementaire.import"
 	excel_file = fields.Binary(string='Excel File')
+	# example_file = fields.Binary(string='File')
 
+	# @api.multi
+	def _get_default_image(self,cr,uid,context=None):
+		attach_obj = self.pool.get('ir.attachment')
+		attach_data_ids=attach_obj.search(cr,uid,[('name','=','Gent_ouvrage_modele')])
+		attach_data = attach_obj.browse(cr,uid,attach_data_ids)
+		print "Ito eh"
+		print attach_data_ids
+		return attach_data.datas
+	_defaults={'excel_file': _get_default_image}
+	# _columns = {
+	# 	'excel_file' : fields.binary('Welcome Letter'),
+	# }
+	# _defaults={
+	# 	'excel_file' : _get_default_welcome_letter 
+	# }
+
+	
 	@api.multi
 	def import_excel(self):
 		print "IMPORT EXCEL"
@@ -848,7 +930,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiaux['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux','categ_id':id_gent_category,'gent_category':id_gent_category})
+					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiaux['Prix Unitaire'], 'sale_ok': False,'type': 'product' })
 				id_mo = self.env['product.product'].search([('name','=',materiaux['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -884,7 +966,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiel['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel','categ_id':id_gent_category,'gent_category':id_gent_category})
+					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiel['Prix Unitaire'], 'sale_ok': False,'type': 'product'})
 				id_mo = self.env['product.product'].search([('name','=',materiel['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -921,7 +1003,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',mo['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre','categ_id':id_gent_category,'gent_category':id_gent_category})
+					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': mo['Prix Unitaire'], 'sale_ok': False,'type': 'service'})
 				id_mo = self.env['product.product'].search([('name','=',mo['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
@@ -1097,7 +1179,7 @@ class OuvrageElementaire(models.Model):
 
 
 	def strip_accents(self, text):
-		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')
+		return ''.join(c for c in unicodedata.normalize('NFKD', text) if unicodedata.category(c) != 'Mn')                    
 
 	
 class OuvrageElementaire(models.Model):
@@ -1179,7 +1261,7 @@ class OuvrageElementaire(models.Model):
 
 	excel_file = fields.Binary(string='Excel File')
 
-	@api.one
+	# @api.one
 	@api.depends('mo_line','materiaux_line','materiel_line')
 	def _compute_oe_pu(self):
 		somme_mo=0
@@ -1214,7 +1296,7 @@ class OuvrageElementaire(models.Model):
 
 	@api.multi
 	def import_excel(self):
-		print "IMPORT EXCEL"
+		print "IMPORT EXCEL OUVRAGE ELEMENTAIRE"
 		# Generating of the excel file to be read by openpyxl
 		my_file = self.excel_file.decode('base64')
 		excel_fileobj = TemporaryFile('wb+')
@@ -1233,7 +1315,28 @@ class OuvrageElementaire(models.Model):
 				print col.value
 		return True
 
-
+# class Binary(http.Controller):
+# 	@http.route('/datas', type='http', auth="public")
+# 	@serialize_exception
+# 	def download_document(self,model,field,id,filename=None, **kw):
+# 		""" Download link for files stored as binary fields.
+# 		:param str model: name of the model to fetch the binary from
+# 		:param str field: binary field
+# 		:param str id: id of the record from which to fetch the binary
+# 		:param str filename: field holding the file's name, if any
+# 		:returns: :class:`werkzeug.wrappers.Response`
+# 		"""
+# 		Model = request.registry[model]
+# 		cr, uid, context = request.cr, request.uid, request.context
+# 		fields = [field]
+# 		res = Model.read(cr, uid, [int(id)], fields, context)[0]
+# 		filecontent = base64.b64decode(res.get(field) or '')
+# 		if not filecontent:
+# 			return request.not_found()
+# 		else:
+# 			if not filename:
+# 				filename = '%s_%s' % (model.replace('.', '_'), id)
+# 				return request.make_response(filecontent,[('Content-Type', 'application/octet-stream'),('Content-Disposition', content_disposition(filename))]) 
 
 class Coeff(models.Model):
 	_name="gent.coeff"
@@ -1285,7 +1388,7 @@ class GentProject(models.Model):
 	_inherit="project.project"
 	order_id =  fields.Many2one('sale.order', 'Devis', domain=[('state', '!=', 'draft')], change_default=True, ondelete='cascade')
 	tasks = fields.One2many('project.task', 'project_id', "Task Activities")
-
+	pourcentage = fields.Float('pourcentage')
 	@api.onchange('order_id')
 	def on_change_order_id(self):
 		print "ORDER ID CHANGE"
@@ -1344,3 +1447,85 @@ class GentAccount(models.Model):
 
 class GentAccountInvoiceLine(models.Model):
 	_inherit = "account.invoice.line"
+
+class GentAttachement(models.Model):
+	_name = "gent.attachement"
+	# rendement = fields.Float('Rendement',default=1,required=True)
+	excel_file = fields.Binary(string='Excel File')
+	# date_debut = fields.date('Date de debut')
+	# date_confirm = fields.date('Confirmation Date')
+	projet=fields.Many2one('project.project', 'Projet', required=True, select=True)
+	begin_date = fields.Date(required=True)
+	end_date = fields.Date(required=True)
+	excel_pourcentage = fields.Binary(string='Attachement', store=True)
+	pourcentage = fields.Float('Pourcentage')
+
+	@api.onchange('projet')
+	def on_projet(self):
+		print "On change project"
+		
+		print self.projet.order_id.name
+		print "price_list"
+
+	@api.multi
+	def import_percentage(self):
+		print "IMPORT EXCEL pourcentage"
+		my_file = self.excel_pourcentage.decode('base64')
+		excel_fileobj = TemporaryFile('wb+')
+		excel_fileobj.write(my_file)
+		excel_fileobj.seek(0)
+		# Create workbook
+		wb = openpyxl.load_workbook(excel_fileobj, data_only=True)
+		# Get the first sheet of excel file
+		ws = wb[wb.get_sheet_names()[0]]
+		start = False
+		sections =[]
+		self.rubrique_line_ids = []
+		rubrique =""
+		lines = []
+		start_line =False
+		for row in ws:
+			val1 = row[0].value
+			val2 = row[1].value
+			val13 = row[12].value
+			if val2 == "TOTAL GENERAL TTC  (en Ariary)":
+				print val13
+				self.projet.order_id.pourcentage = val13*100
+				self.pourcentage = val13*100
+
+
+class Chantier(models.Model):
+	_inherit= "mrp.bom"
+	bom_line_labour_ids =  fields.One2many('mrp.bom.line.labour', 'bom_id', 'BoM Lines', copy=True)
+	bom_line_materiel_ids =  fields.One2many('mrp.bom.line.materiel', 'bom_id', 'BoM Lines', copy=True)
+
+	
+class gent_mrp_bom_line(models.Model):
+	_inherit= "mrp.bom.line"
+
+	price_unit = fields.Float('Unit Price', required=True, digits_compute= dp.get_precision('Product Price'), compute="_compute_pu")
+	price_subtotal =  fields.Float('Montant',compute='_compute_subtotal')
+	
+	# budget_product_qty = fields.Float('Budget Quantité', required=True, digits_compute=dp.get_precision('Product Unit of Measure'))
+	
+	@api.one
+	@api.depends('price_unit','product_qty')
+	def _compute_subtotal(self):
+		for record in self:
+			record.price_subtotal = record.price_unit * record.product_qty
+
+	@api.one
+	@api.depends('product_id')
+	def _compute_pu(self):
+		for record in self:
+			record.price_unit = record.product_id.standard_price
+
+class gent_mrp_bom_line(models.Model):
+	_inherit= "mrp.bom.line"
+	_name="mrp.bom.line.labour"
+
+class gent_mrp_bom_line(models.Model):
+	_inherit= "mrp.bom.line"
+	_name="mrp.bom.line.materiel"
+	
+
