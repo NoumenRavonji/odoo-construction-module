@@ -1454,13 +1454,19 @@ class GentAccountInvoiceLine(models.Model):
 # 	name = fields.Char(string="Nom")
 # 	session_ids = fields.One2many('gent.attachement', 'attachement_id', string="Sessions")
 
+class GentProjectAttachement(models.Model):
+	_inherit="account.analytic.account"
+	
+	# name = fields.Char(string="Nom")
+	gent_project_attachement = fields.One2many('gent.attachement', 'attachement_id')
+
 class GentAttachement(models.Model):
 	_name = "gent.attachement"
 	# rendement = fields.Float('Rendement',default=1,required=True)
 	excel_file = fields.Binary(string='Excel File')
 	# date_debut = fields.date('Date de debut')
 	# date_confirm = fields.date('Confirmation Date')
-	projet=fields.Many2one('project.project', 'Projet', required=True, select=True)
+	# projet=fields.Many2one('project.project', 'Projet', required=True, select=True)
 	begin_date = fields.Date(required=True)
 	end_date = fields.Date(required=True)
 	excel_pourcentage = fields.Binary(string='Attachement', store=True)

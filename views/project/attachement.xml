@@ -11,6 +11,7 @@
                 <xpath expr="//page[@name='contract_page']" position="after">
                     <page string="Attachement">
                         <field name="name"/>
+                        <field name="gent_project_attachement"/>
                     </page>
                 </xpath>
             </field>

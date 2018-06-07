@@ -34,7 +34,7 @@
             <field name="arch" type="xml">
                 <form string="Test">
                     <group>
-                        <field name ="projet"/>
+                        <!-- <field name ="projet"/> -->
                         <field name="begin_date" string="Début"/>
                         <field name="end_date" string="Fin"/>
                         <field name="excel_pourcentage"/>
