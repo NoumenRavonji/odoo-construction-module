@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	<!-- improved idea categories list -->
+        <record id="product_template_search_view2" model="ir.ui.view">
+            <field name="name">product.template.search2</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_search_view"/>
+            <field name="arch" type="xml">
+                <!-- find field description and add the field
+                     idea_ids after it -->
+                <xpath expr="//filter[@name='filter_to_sell']" position="replace">
+                  <filter string="Produits stockable" name="filter_to_sell" icon="terp-accessories-archiver-minus" domain="[('not_gent_product','=',1)]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
+
+<!-- <record id="product_template_action" model="ir.actions.act_window">
+            <field name="name">Products</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">product.template</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="product_template_kanban_view"/>
+            <field name="context">{"search_default_filter_to_sell":1}</field>
+        </record> -->
+
+<!-- <record id="product_template_search_view" model="ir.ui.view">
+            <field name="name">product.template.search</field>
+            <field name="model">product.template</field>
+            <field name="arch" type="xml">
+                <search string="Product">
+                    <field name="name" string="Product" filter_domain="['|',('default_code','ilike',self),('name','ilike',self)]"/>
+                    <filter string="Services" icon="terp-accessories-archiver" domain="[('type','=','service')]"/>
+                    <filter string="Consumable" name="consumable" icon="terp-accessories-archiver" domain="[('type','=','consu')]" help="Consumable products"/>
+                    <separator/>
+                    <filter string="Can be Sold" name="filter_to_sell" icon="terp-accessories-archiver-minus" domain="[('sale_ok','=',1)]"/>
+                    <field name="categ_id" filter_domain="[('categ_id', 'child_of', self)]"/>
+                    <field string="Product Variant" name="product_variant_ids" filter_domain="['|', ('product_variant_ids.name','ilike',self), ('product_variant_ids.attribute_value_ids.attribute_id.name','ilike',self)]"/>
+                    <field name="company_id"/>
+                    <field name="pricelist_id" widget="selection" context="{'pricelist': self}" filter_domain="[]" groups="product.group_sale_pricelist"/> 
+                    <group  expand='0' string='Group by...'>
+                       <filter string='Category' domain="[]" context="{'group_by' : 'categ_id'}"/>
+                       <filter string='Default Unit of Measure' icon="terp-mrp" domain="[]" context="{'group_by' : 'uom_id'}"/>
+                       <filter string='Type' icon="terp-stock_symbol-selection" domain="[]" context="{'group_by' : 'type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record> -->

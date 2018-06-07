@@ -43,7 +43,9 @@
         'views/facturation/facturation.xml',
         'datas/test.xlsx',
         'views/project/project.xml',
+        'views/project/attachement.xml',
         'views/mrp/mrp.xml',
+        'views/filter_article.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -16,3 +16,9 @@ class GentMrpProduction(models.Model):
 	
 # class GentAttachement(models.Model):
 # 	_name = "gent.attachement"
+
+class GentProjectAttachement(models.Model):
+	_inherit="account.analytic.account"
+	
+	# name = fields.Char(string="Nom")
+	session_ids = fields.One2many('gent.attachement', 'attachement_id', string="Sessions")

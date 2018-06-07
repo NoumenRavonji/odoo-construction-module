@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+         <record id="gent_attachements" model="ir.ui.view">
+            <field name="name">analytic.analytic.account.form2</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+            <field name="arch" type="xml">
+                <!-- find field description and add the field
+                     idea_ids after it -->
+                <xpath expr="//page[@name='contract_page']" position="after">
+                    <page string="Attachement">
+                        <field name="name"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
+

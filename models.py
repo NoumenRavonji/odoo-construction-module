@@ -239,6 +239,8 @@ class Product2(models.Model):
 
 	gent_type = fields.Selection([('chantier','Chantier'),('ouvrage_elementaire','Ouvrage Elementaire'),('composant_materiaux','Composant Materiaux'),('composant_materiel','Composant Materiel'),('composant_main_d_oeuvre','Composant main d\'oeuvre'),('epi','EPI'),('autres_charges','Autres charges')])
 	gent_category = fields.Many2one(comodel_name='product.category', required=True,default=1)
+	not_gent_product = fields.Boolean(default=1)
+	
 	@api.onchange('gent_category')
 	def on_change_gent_category(self):
 		print "Gent type CHANGE"
@@ -348,7 +350,7 @@ class Bde(models.Model):
 						if(self.env['product.template'].search([['name','=', val2],['gent_type','=','ouvrage_elementaire']])):
 							print "product exists in product"
 						else:
-							self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5})
+							self.env['product.template'].create({'name': val2, 'gent_type': 'ouvrage_elementaire', 'list_price': val5, 'not_gent_product':0})
 
 					product_id = self.env['product.product'].search([['name',"=",val2],["gent_type", "=","ouvrage_elementaire"]]).id
 					# print product_id
@@ -895,7 +897,7 @@ class OuvrageElementaire(models.Model):
 			if (self.env['product.product'].search([['name', '=',ouvrage['nom_section']]])):
 				print "Bonjour! :",self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
 			else:
-				self.env['product.template'].create({'name':ouvrage['nom_section'],'gent_type':'ouvrage_elementaire'})
+				self.env['product.template'].create({'name':ouvrage['nom_section'],'gent_type':'ouvrage_elementaire','not_gent_product':0})
 			id_ouv = self.env['product.product'].search([('name','=',ouvrage['nom_section'])]).id
 			if (self.env['gent.ouvrage.elementaire'].search([['product_id','=',id_ouv]])):
 				print "ouvrage elementaire existant"
@@ -930,7 +932,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiaux['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiaux['Prix Unitaire'], 'sale_ok': False,'type': 'product' })
+					self.env['product.template'].create({'name':materiaux['Designation'],'gent_type':'composant_materiaux','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiaux['Prix Unitaire'], 'sale_ok': False,'type': 'product','not_gent_product':0 })
 				id_mo = self.env['product.product'].search([('name','=',materiaux['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -966,7 +968,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',materiel['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiel['Prix Unitaire'], 'sale_ok': False,'type': 'product'})
+					self.env['product.template'].create({'name':materiel['Designation'],'gent_type':'composant_materiel','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': materiel['Prix Unitaire'], 'sale_ok': False,'type': 'product','not_gent_product':0})
 				id_mo = self.env['product.product'].search([('name','=',materiel['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',materiaux['Unite'])]).id
@@ -1003,7 +1005,7 @@ class OuvrageElementaire(models.Model):
 				if(self.env['product.product'].search([['name','=',mo['Designation']]])):
 					print "Le produit existe deja"
 				else:
-					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': mo['Prix Unitaire'], 'sale_ok': False,'type': 'service'})
+					self.env['product.template'].create({'name':mo['Designation'],'gent_type':'composant_main_d_oeuvre','categ_id':id_gent_category,'gent_category':id_gent_category, 'standard_price': mo['Prix Unitaire'], 'sale_ok': False,'type': 'service','not_gent_product':0})
 				id_mo = self.env['product.product'].search([('name','=',mo['Designation'])]).id
 				print id_mo
 				id_unit_mo = self.env['product.uom'].search([('name','=',mo['Unite'])]).id
@@ -1414,9 +1416,6 @@ class GentProjectTask(models.Model):
 	_inherit="project.task"
 	project_id = fields.Many2one('project.project', 'Project', ondelete='set null', select=True, change_default=True)
         
-		
-
-	
 	
 
 class GentSaleLayout(models.Model):
@@ -1448,6 +1447,13 @@ class GentAccount(models.Model):
 class GentAccountInvoiceLine(models.Model):
 	_inherit = "account.invoice.line"
 
+# class GentProjectAttachement(models.Model):
+# 	_name= "gent.account.attachement"
+# 	_inherit="account.analytic.account"
+	
+# 	name = fields.Char(string="Nom")
+# 	session_ids = fields.One2many('gent.attachement', 'attachement_id', string="Sessions")
+
 class GentAttachement(models.Model):
 	_name = "gent.attachement"
 	# rendement = fields.Float('Rendement',default=1,required=True)
@@ -1459,6 +1465,7 @@ class GentAttachement(models.Model):
 	end_date = fields.Date(required=True)
 	excel_pourcentage = fields.Binary(string='Attachement', store=True)
 	pourcentage = fields.Float('Pourcentage')
+	attachement_id = fields.Many2one('account.analytic.account',ondelete='cascade', string="Attachement")
 
 	@api.onchange('projet')
 	def on_projet(self):
